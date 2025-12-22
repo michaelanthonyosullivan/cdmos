@@ -43,6 +43,12 @@
     --timer-danger: 0 84% 60%;
     --timer-warning: 38 92% 50%;
     --score-gold: 45 93% 58%;
+    
+    /* Colorful accents */
+    --accent-purple: 280 85% 60%;
+    --accent-pink: 330 85% 60%;
+    --accent-cyan: 185 90% 50%;
+    --accent-green: 150 80% 45%;
 
     --sidebar-background: 222 47% 8%;
     --sidebar-foreground: 210 40% 98%;
@@ -95,28 +101,37 @@
 @layer components {
   .letter-tile {
     @apply relative flex items-center justify-center w-16 h-20 md:w-20 md:h-24 
-           rounded-lg font-display text-3xl md:text-4xl font-bold uppercase
+           rounded-xl font-display text-3xl md:text-4xl font-bold uppercase
            transition-all duration-300 ease-out;
-    background: linear-gradient(145deg, hsl(var(--tile-bg)), hsl(222 47% 10%));
-    border: 2px solid hsl(var(--tile-border) / 0.5);
+    background: linear-gradient(145deg, hsl(var(--tile-bg)), hsl(222 47% 8%));
+    border: 2px solid hsl(var(--tile-border) / 0.7);
     box-shadow: 
-      0 4px 20px hsl(var(--tile-glow) / 0.15),
-      inset 0 1px 0 hsl(var(--foreground) / 0.1);
+      0 8px 32px hsl(var(--tile-glow) / 0.35),
+      0 4px 16px hsl(var(--accent-purple) / 0.15),
+      0 2px 8px hsl(0 0% 0% / 0.4),
+      inset 0 1px 0 hsl(var(--foreground) / 0.15),
+      inset 0 -2px 0 hsl(0 0% 0% / 0.2);
     color: hsl(var(--foreground));
+    text-shadow: 0 2px 8px hsl(var(--tile-glow) / 0.4);
   }
 
   .letter-tile:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px) scale(1.02);
+    border-color: hsl(var(--accent));
     box-shadow: 
-      0 8px 30px hsl(var(--tile-glow) / 0.25),
-      inset 0 1px 0 hsl(var(--foreground) / 0.1);
-    border-color: hsl(var(--tile-border));
+      0 12px 40px hsl(var(--tile-glow) / 0.5),
+      0 8px 24px hsl(var(--accent) / 0.3),
+      0 4px 12px hsl(0 0% 0% / 0.5),
+      inset 0 1px 0 hsl(var(--foreground) / 0.2);
   }
 
   .letter-tile.selected {
     @apply ring-2 ring-accent;
-    transform: scale(0.95);
-    opacity: 0.6;
+    transform: scale(0.92);
+    opacity: 0.5;
+    box-shadow: 
+      0 2px 8px hsl(var(--accent) / 0.3),
+      inset 0 2px 4px hsl(0 0% 0% / 0.3);
   }
 
   .number-tile {
@@ -165,7 +180,9 @@
   .score-display {
     @apply font-display text-4xl md:text-5xl font-bold;
     color: hsl(var(--score-gold));
-    text-shadow: 0 0 20px hsl(var(--score-gold) / 0.5);
+    text-shadow: 
+      0 0 20px hsl(var(--score-gold) / 0.6),
+      0 0 40px hsl(var(--score-gold) / 0.3);
   }
 
   .timer-ring {
@@ -189,9 +206,12 @@
 
   .card-game {
     @apply rounded-2xl p-6 md:p-8;
-    background: linear-gradient(145deg, hsl(var(--card)), hsl(222 47% 9%));
-    border: 1px solid hsl(var(--border) / 0.5);
-    box-shadow: 0 10px 40px hsl(222 47% 5% / 0.5);
+    background: linear-gradient(160deg, hsl(var(--card)), hsl(222 47% 7%));
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: 
+      0 20px 60px hsl(222 47% 3% / 0.6),
+      0 10px 30px hsl(var(--primary) / 0.08),
+      0 0 80px hsl(var(--accent-purple) / 0.05);
   }
 }
 
