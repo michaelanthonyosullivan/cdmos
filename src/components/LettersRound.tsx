@@ -18,6 +18,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
   const [roundScore, setRoundScore] = useState(0);
   const [vowelCount, setVowelCount] = useState(0);
   const [consonantCount, setConsonantCount] = useState(0);
+  const [isValidating, setIsValidating] = useState(false);
 
   const MAX_LETTERS = 9;
   const MIN_VOWELS = 3;
@@ -59,7 +60,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     submitWord();
   }, [userWord, letters]);
 
-  const submitWord = () => {
+  const submitWord = async () => {
     const word = userWord.trim().toUpperCase();
     
     if (!word) {
@@ -75,7 +76,11 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
       return;
     }
 
-    if (!isValidWord(word)) {
+    setIsValidating(true);
+    const valid = await isValidWord(word);
+    setIsValidating(false);
+
+    if (!valid) {
       toast.error("That's not a valid word!");
       setRoundScore(0);
       setPhase('result');
@@ -188,8 +193,9 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
               submitWord();
             }}
             className="game-button-primary"
+            disabled={isValidating}
           >
-            Submit Word
+            {isValidating ? 'Checking...' : 'Submit Word'}
           </button>
         </div>
       )}
