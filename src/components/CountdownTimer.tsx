@@ -1,0 +1,100 @@
+import { useEffect, useState } from 'react';
+
+interface CountdownTimerProps {
+  duration: number;
+  isRunning: boolean;
+  onComplete: () => void;
+  size?: number;
+}
+
+export const CountdownTimer = ({ 
+  duration, 
+  isRunning, 
+  onComplete,
+  size = 180 
+}: CountdownTimerProps) => {
+  const [timeLeft, setTimeLeft] = useState(duration);
+  
+  useEffect(() => {
+    setTimeLeft(duration);
+  }, [duration]);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    if (timeLeft <= 0) {
+      onComplete();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          onComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isRunning, timeLeft, onComplete]);
+
+  const progress = (timeLeft / duration) * 100;
+  const circumference = 2 * Math.PI * 70;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  const getTimerClass = () => {
+    if (timeLeft <= 5) return 'danger';
+    if (timeLeft <= 10) return 'warning';
+    return '';
+  };
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg
+        className="transform -rotate-90"
+        width={size}
+        height={size}
+        viewBox="0 0 160 160"
+      >
+        {/* Background circle */}
+        <circle
+          cx="80"
+          cy="80"
+          r="70"
+          fill="none"
+          stroke="hsl(var(--muted))"
+          strokeWidth="8"
+        />
+        {/* Progress circle */}
+        <circle
+          cx="80"
+          cy="80"
+          r="70"
+          fill="none"
+          strokeWidth="8"
+          strokeLinecap="round"
+          className={`timer-ring ${getTimerClass()} transition-all duration-300`}
+          style={{
+            strokeDasharray: circumference,
+            strokeDashoffset: strokeDashoffset,
+          }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span 
+          className={`font-display text-5xl font-bold transition-colors duration-300 ${
+            timeLeft <= 5 
+              ? 'text-timer-danger' 
+              : timeLeft <= 10 
+                ? 'text-timer-warning' 
+                : 'text-foreground'
+          }`}
+        >
+          {timeLeft}
+        </span>
+      </div>
+    </div>
+  );
+};
