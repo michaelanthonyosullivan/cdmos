@@ -87,7 +87,7 @@ const Index = () => {
       
       {/* Footer */}
       <footer className="py-4 text-center text-muted-foreground text-sm">
-        <p>Inspired by the classic TV show</p>
+        <p>Inspired by the classic TV show - reimagined by Michael O'Sullivan</p>
       </footer>
     </div>
   );
