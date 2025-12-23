@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { NumberTile } from './NumberTile';
 import { CountdownTimer } from './CountdownTimer';
-import { pickNumbers, generateTarget } from '@/lib/gameUtils';
+import { generateTarget } from '@/lib/gameUtils';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { soundEffects } from '@/hooks/useSoundEffects';
 
 interface NumbersRoundProps {
   onRoundComplete: (score: number) => void;
@@ -34,6 +35,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     const num = availableLarge[Math.floor(Math.random() * availableLarge.length)];
     setNumbers([...numbers, num]);
     setLargeCount(prev => prev + 1);
+    soundEffects.playReveal();
   };
 
   const pickSmall = () => {
@@ -41,6 +43,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     const smallNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const num = smallNumbers[Math.floor(Math.random() * smallNumbers.length)];
     setNumbers([...numbers, num]);
+    soundEffects.playReveal();
   };
 
   useEffect(() => {
@@ -76,6 +79,27 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     }
   };
 
+  // Validate that the expression only uses available numbers
+  const validateNumbersUsed = (expr: string): boolean => {
+    // Extract all numbers from the expression
+    const numbersInExpr = expr.match(/\d+/g);
+    if (!numbersInExpr) return true; // No numbers is technically valid (empty)
+    
+    // Create a copy of available numbers to track usage
+    const availableNumbers = [...numbers];
+    
+    for (const numStr of numbersInExpr) {
+      const num = parseInt(numStr, 10);
+      const index = availableNumbers.indexOf(num);
+      if (index === -1) {
+        return false; // Number not available or already used
+      }
+      availableNumbers.splice(index, 1); // Remove used number
+    }
+    
+    return true;
+  };
+
   const submitAnswer = () => {
     const answer = userAnswer.trim();
     
@@ -85,10 +109,20 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
       return;
     }
 
+    // Validate numbers used
+    if (!validateNumbersUsed(answer)) {
+      toast.error("You can only use the available numbers, each once!");
+      soundEffects.playError();
+      setRoundScore(0);
+      setPhase('result');
+      return;
+    }
+
     const result = evaluateExpression(answer);
     
     if (result === null) {
       toast.error("Invalid expression!");
+      soundEffects.playError();
       setRoundScore(0);
       setPhase('result');
       return;
@@ -100,14 +134,18 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     if (diff === 0) {
       score = 10;
       toast.success('Exact answer! +10 points');
+      soundEffects.playSuccess();
     } else if (diff <= 5) {
       score = 7;
       toast.success(`Within 5! (${result}) +7 points`);
+      soundEffects.playSuccess();
     } else if (diff <= 10) {
       score = 5;
       toast.success(`Within 10! (${result}) +5 points`);
+      soundEffects.playSuccess();
     } else {
       toast.info(`Result: ${result} - Too far from target`);
+      soundEffects.playError();
     }
 
     setRoundScore(score);

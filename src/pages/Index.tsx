@@ -3,9 +3,11 @@ import { GameHeader } from '@/components/GameHeader';
 import { StartScreen } from '@/components/StartScreen';
 import { LettersRound } from '@/components/LettersRound';
 import { NumbersRound } from '@/components/NumbersRound';
+import { ConundrumRound } from '@/components/ConundrumRound';
 import { GameOver } from '@/components/GameOver';
+import { HighScoreBoard } from '@/components/HighScoreBoard';
 
-type GamePhase = 'start' | 'letters' | 'numbers' | 'gameover';
+type GamePhase = 'start' | 'letters' | 'numbers' | 'conundrum' | 'gameover';
 
 const Index = () => {
   const [phase, setPhase] = useState<GamePhase>('start');
@@ -13,7 +15,7 @@ const Index = () => {
   const [currentRound, setCurrentRound] = useState(1);
   const [roundKey, setRoundKey] = useState(0);
   
-  const TOTAL_ROUNDS = 6; // 3 letters + 3 numbers
+  const TOTAL_ROUNDS = 7; // 3 letters + 3 numbers + 1 conundrum
 
   const startGame = () => {
     setScore(0);
@@ -25,7 +27,11 @@ const Index = () => {
   const handleRoundComplete = (roundScore: number) => {
     setScore(prev => prev + roundScore);
     
-    if (currentRound >= TOTAL_ROUNDS) {
+    // After round 6 (3 letters + 3 numbers), go to conundrum
+    if (currentRound === 6) {
+      setCurrentRound(7);
+      setPhase('conundrum');
+    } else if (currentRound >= TOTAL_ROUNDS) {
       setPhase('gameover');
     } else {
       setCurrentRound(prev => prev + 1);
@@ -34,10 +40,15 @@ const Index = () => {
       // Alternate between letters and numbers
       if (phase === 'letters') {
         setPhase('numbers');
-      } else {
+      } else if (phase === 'numbers') {
         setPhase('letters');
       }
     }
+  };
+
+  const handleConundrumComplete = (roundScore: number) => {
+    setScore(prev => prev + roundScore);
+    setPhase('gameover');
   };
 
   const resetGame = () => {
@@ -60,7 +71,10 @@ const Index = () => {
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-3xl">
           {phase === 'start' && (
-            <StartScreen onStart={startGame} />
+            <>
+              <StartScreen onStart={startGame} />
+              <HighScoreBoard />
+            </>
           )}
           
           {phase === 'letters' && (
@@ -76,6 +90,13 @@ const Index = () => {
               key={`numbers-${roundKey}`}
               onRoundComplete={handleRoundComplete}
               roundNumber={roundKey}
+            />
+          )}
+
+          {phase === 'conundrum' && (
+            <ConundrumRound 
+              key="conundrum"
+              onRoundComplete={handleConundrumComplete}
             />
           )}
           

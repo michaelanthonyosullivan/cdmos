@@ -4,6 +4,7 @@ import { CountdownTimer } from './CountdownTimer';
 import { getRandomConsonant, getRandomVowel, isValidWord, canFormWord, calculateWordScore } from '@/lib/gameUtils';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { soundEffects } from '@/hooks/useSoundEffects';
 
 interface LettersRoundProps {
   onRoundComplete: (score: number) => void;
@@ -33,6 +34,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     const newLetter = getRandomConsonant();
     setLetters([...letters, newLetter]);
     setConsonantCount(prev => prev + 1);
+    soundEffects.playReveal();
   };
 
   const addVowel = () => {
@@ -44,6 +46,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     const newLetter = getRandomVowel();
     setLetters([...letters, newLetter]);
     setVowelCount(prev => prev + 1);
+    soundEffects.playReveal();
   };
 
   useEffect(() => {
@@ -71,6 +74,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
 
     if (!canFormWord(word, letters)) {
       toast.error("You can only use the available letters!");
+      soundEffects.playError();
       setRoundScore(0);
       setPhase('result');
       return;
@@ -82,6 +86,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
 
     if (!valid) {
       toast.error("That's not a valid word!");
+      soundEffects.playError();
       setRoundScore(0);
       setPhase('result');
       return;
@@ -91,6 +96,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     setRoundScore(score);
     setPhase('result');
     toast.success(`Great word! +${score} points`);
+    soundEffects.playSuccess();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
