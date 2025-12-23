@@ -48,3 +48,9 @@ export const isNewHighScore = (score: number): boolean => {
   if (scores.length < MAX_SCORES) return true;
   return score > scores[scores.length - 1].score;
 };
+
+export const getHighScoreRank = (score: number): number => {
+  const scores = getHighScores();
+  const allScores = [...scores.map(s => s.score), score].sort((a, b) => b - a);
+  return allScores.indexOf(score) + 1;
+};

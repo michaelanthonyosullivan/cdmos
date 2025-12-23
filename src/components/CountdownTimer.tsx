@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef } from 'react';
+import { soundEffects } from '@/hooks/useSoundEffects';
 
 interface CountdownTimerProps {
   duration: number;
@@ -7,12 +8,12 @@ interface CountdownTimerProps {
   size?: number;
 }
 
-export const CountdownTimer = ({ 
+export const CountdownTimer = forwardRef<HTMLDivElement, CountdownTimerProps>(({ 
   duration, 
   isRunning, 
   onComplete,
   size = 180 
-}: CountdownTimerProps) => {
+}, ref) => {
   const [timeLeft, setTimeLeft] = useState(duration);
   
   useEffect(() => {
@@ -20,9 +21,17 @@ export const CountdownTimer = ({
   }, [duration]);
 
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning) {
+      soundEffects.stopTicking();
+      return;
+    }
+
+    // Start ticking sound
+    soundEffects.startTicking(timeLeft);
 
     if (timeLeft <= 0) {
+      soundEffects.stopTicking();
+      soundEffects.playTimeUp();
       onComplete();
       return;
     }
@@ -30,14 +39,21 @@ export const CountdownTimer = ({
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
+          soundEffects.stopTicking();
+          soundEffects.playTimeUp();
           onComplete();
           return 0;
         }
+        // Update ticking sound based on time left
+        soundEffects.startTicking(prev - 1);
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      soundEffects.stopTicking();
+    };
   }, [isRunning, timeLeft, onComplete]);
 
   const progress = (timeLeft / duration) * 100;
@@ -51,7 +67,7 @@ export const CountdownTimer = ({
   };
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div ref={ref} className="relative" style={{ width: size, height: size }}>
       <svg
         className="transform -rotate-90"
         width={size}
@@ -97,4 +113,6 @@ export const CountdownTimer = ({
       </div>
     </div>
   );
-};
+});
+
+CountdownTimer.displayName = 'CountdownTimer';
