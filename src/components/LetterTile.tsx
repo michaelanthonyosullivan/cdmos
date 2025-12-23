@@ -4,6 +4,7 @@ interface LetterTileProps {
   selected?: boolean;
   disabled?: boolean;
   delay?: number;
+  isConundrum?: boolean;
 }
 
 export const LetterTile = ({ 
@@ -11,13 +12,14 @@ export const LetterTile = ({
   onClick, 
   selected = false,
   disabled = false,
-  delay = 0 
+  delay = 0,
+  isConundrum = false
 }: LetterTileProps) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled || selected}
-      className={`letter-tile animate-pop-in ${selected ? 'selected' : ''}`}
+      className={`letter-tile animate-pop-in ${selected ? 'selected' : ''} ${isConundrum ? 'conundrum' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {letter}
