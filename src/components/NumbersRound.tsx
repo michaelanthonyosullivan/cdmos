@@ -369,7 +369,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
               type="text"
               placeholder="e.g. [100 + 25] x 4"
               value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
+              onChange={(e) => setUserAnswer(e.target.value.replace(/=/g, '+'))}
               onKeyDown={handleKeyPress}
               className="text-center font-mono text-xl h-14 bg-secondary border-border focus:border-primary"
               autoFocus
