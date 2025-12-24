@@ -10,7 +10,7 @@ interface NumbersRoundProps {
   roundNumber: number;
 }
 
-// Normalize expression: convert [] to () and x to *
+// Normalize expression: convert [] to (), x to *, = to +
 const normalizeExpression = (expr: string): string => {
   return expr
     .replace(/\[/g, '(')
@@ -18,6 +18,7 @@ const normalizeExpression = (expr: string): string => {
     .replace(/x/gi, '*')
     .replace(/×/g, '*')
     .replace(/÷/g, '/')
+    .replace(/=/g, '+')
     .trim();
 };
 
