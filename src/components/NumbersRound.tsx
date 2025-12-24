@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { NumberTile } from './NumberTile';
 import { CountdownTimer } from './CountdownTimer';
-import { generateTarget } from '@/lib/gameUtils';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
@@ -11,9 +10,124 @@ interface NumbersRoundProps {
   roundNumber: number;
 }
 
+// Normalize expression: convert [] to () and x to *
+const normalizeExpression = (expr: string): string => {
+  return expr
+    .replace(/\[/g, '(')
+    .replace(/\]/g, ')')
+    .replace(/x/gi, '*')
+    .replace(/×/g, '*')
+    .replace(/÷/g, '/')
+    .trim();
+};
+
+// Find a solution using the given numbers to reach the target
+const findSolution = (numbers: number[], target: number): string | null => {
+  const ops = ['+', '-', '*', '/'];
+  
+  // Try combinations of 2 numbers
+  for (let i = 0; i < numbers.length; i++) {
+    for (let j = 0; j < numbers.length; j++) {
+      if (i === j) continue;
+      for (const op of ops) {
+        const result = applyOp(numbers[i], numbers[j], op);
+        if (result === target) {
+          return `${numbers[i]} ${op === '*' ? 'x' : op} ${numbers[j]} = ${target}`;
+        }
+      }
+    }
+  }
+  
+  // Try combinations of 3 numbers
+  for (let i = 0; i < numbers.length; i++) {
+    for (let j = 0; j < numbers.length; j++) {
+      if (i === j) continue;
+      for (const op1 of ops) {
+        const r1 = applyOp(numbers[i], numbers[j], op1);
+        if (r1 === null || r1 <= 0) continue;
+        
+        for (let k = 0; k < numbers.length; k++) {
+          if (k === i || k === j) continue;
+          for (const op2 of ops) {
+            const result = applyOp(r1, numbers[k], op2);
+            if (result === target) {
+              return `[${numbers[i]} ${op1 === '*' ? 'x' : op1} ${numbers[j]}] ${op2 === '*' ? 'x' : op2} ${numbers[k]} = ${target}`;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Try combinations of 4 numbers
+  for (let i = 0; i < numbers.length; i++) {
+    for (let j = 0; j < numbers.length; j++) {
+      if (i === j) continue;
+      for (const op1 of ops) {
+        const r1 = applyOp(numbers[i], numbers[j], op1);
+        if (r1 === null || r1 <= 0) continue;
+        
+        for (let k = 0; k < numbers.length; k++) {
+          if (k === i || k === j) continue;
+          for (const op2 of ops) {
+            const r2 = applyOp(r1, numbers[k], op2);
+            if (r2 === null || r2 <= 0) continue;
+            
+            for (let l = 0; l < numbers.length; l++) {
+              if (l === i || l === j || l === k) continue;
+              for (const op3 of ops) {
+                const result = applyOp(r2, numbers[l], op3);
+                if (result === target) {
+                  return `[[${numbers[i]} ${op1 === '*' ? 'x' : op1} ${numbers[j]}] ${op2 === '*' ? 'x' : op2} ${numbers[k]}] ${op3 === '*' ? 'x' : op3} ${numbers[l]} = ${target}`;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return null;
+};
+
+const applyOp = (a: number, b: number, op: string): number | null => {
+  switch (op) {
+    case '+': return a + b;
+    case '-': return a - b > 0 ? a - b : null;
+    case '*': return a * b;
+    case '/': return b !== 0 && a % b === 0 ? a / b : null;
+    default: return null;
+  }
+};
+
+// Generate a solvable target
+const generateSolvableTarget = (numbers: number[]): { target: number; solution: string } => {
+  // Try to find a target between 100-999 that's solvable
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const target = Math.floor(Math.random() * 900) + 100;
+    const solution = findSolution(numbers, target);
+    if (solution) {
+      return { target, solution };
+    }
+  }
+  
+  // Fallback: generate a target from the numbers themselves
+  const sorted = [...numbers].sort((a, b) => b - a);
+  if (sorted[0] * sorted[1] >= 100 && sorted[0] * sorted[1] <= 999) {
+    const target = sorted[0] * sorted[1];
+    return { target, solution: `${sorted[0]} x ${sorted[1]} = ${target}` };
+  }
+  
+  // Simple addition fallback
+  const sum = sorted[0] + sorted[1] + sorted[2];
+  return { target: sum, solution: `${sorted[0]} + ${sorted[1]} + ${sorted[2]} = ${sum}` };
+};
+
 export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps) => {
   const [numbers, setNumbers] = useState<number[]>([]);
   const [target, setTarget] = useState(0);
+  const [solution, setSolution] = useState('');
   const [phase, setPhase] = useState<'picking' | 'playing' | 'result'>('picking');
   const [timerRunning, setTimerRunning] = useState(false);
   const [userAnswer, setUserAnswer] = useState('');
@@ -48,8 +162,9 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
 
   useEffect(() => {
     if (numbers.length === 6 && phase === 'picking') {
-      const newTarget = generateTarget();
+      const { target: newTarget, solution: newSolution } = generateSolvableTarget(numbers);
       setTarget(newTarget);
+      setSolution(newSolution);
       setTimeout(() => {
         setPhase('playing');
         setTimerRunning(true);
@@ -64,12 +179,13 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
 
   const evaluateExpression = (expr: string): number | null => {
     try {
+      const normalized = normalizeExpression(expr);
       // Only allow numbers, operators, parentheses, and spaces
-      if (!/^[\d+\-*/() ]+$/.test(expr)) {
+      if (!/^[\d+\-*/() ]+$/.test(normalized)) {
         return null;
       }
       // Safely evaluate
-      const result = Function(`"use strict"; return (${expr})`)();
+      const result = Function(`"use strict"; return (${normalized})`)();
       if (typeof result === 'number' && isFinite(result)) {
         return Math.round(result);
       }
@@ -81,8 +197,9 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
 
   // Validate that the expression only uses available numbers
   const validateNumbersUsed = (expr: string): boolean => {
+    const normalized = normalizeExpression(expr);
     // Extract all numbers from the expression
-    const numbersInExpr = expr.match(/\d+/g);
+    const numbersInExpr = normalized.match(/\d+/g);
     if (!numbersInExpr) return true; // No numbers is technically valid (empty)
     
     // Create a copy of available numbers to track usage
@@ -166,6 +283,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
   const resetRound = () => {
     setNumbers([]);
     setTarget(0);
+    setSolution('');
     setPhase('picking');
     setTimerRunning(false);
     setUserAnswer('');
@@ -248,7 +366,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
           <div className="w-full max-w-md">
             <Input
               type="text"
-              placeholder="e.g. (100 + 25) * 4"
+              placeholder="e.g. [100 + 25] x 4"
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value)}
               onKeyDown={handleKeyPress}
@@ -256,7 +374,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
               autoFocus
             />
             <p className="text-muted-foreground text-sm text-center mt-2">
-              Use +, -, *, / and parentheses
+              Use +, -, *, / or x. Use [] or () for brackets.
             </p>
           </div>
           <button 
@@ -289,6 +407,13 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
             <p className="text-muted-foreground">Points earned:</p>
             <p className="score-display">{roundScore}</p>
           </div>
+          
+          {/* Show solution */}
+          <div className="card-game text-center">
+            <p className="text-muted-foreground text-sm mb-2">One possible solution:</p>
+            <p className="font-mono text-lg text-primary">{solution}</p>
+          </div>
+          
           <button 
             onClick={continueToNext}
             className="game-button-primary"
