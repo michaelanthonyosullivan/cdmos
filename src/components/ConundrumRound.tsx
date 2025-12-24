@@ -5,12 +5,14 @@ import { getRandomConundrumWord, scrambleWord } from '@/lib/conundrumWords';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface ConundrumRoundProps {
   onRoundComplete: (score: number) => void;
 }
 
 export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
+  const { t } = useLanguage();
   const [answer, setAnswer] = useState('');
   const [scrambled, setScrambled] = useState('');
   const [phase, setPhase] = useState<'ready' | 'playing' | 'result'>('ready');
@@ -53,10 +55,10 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
       setRoundScore(10);
       setPhase('result');
       soundEffects.playSuccess();
-      toast.success('Brilliant! You solved the Conundrum! +10 points');
+      toast.success(t.brilliantSolved);
     } else {
       soundEffects.playError();
-      toast.error('Not quite! Try again...');
+      toast.error(t.notQuiteTryAgain);
       setUserGuess('');
     }
   };
@@ -75,12 +77,12 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
     <div className="flex flex-col items-center gap-8">
       <div className="text-center mb-4">
         <h2 className="font-display text-2xl md:text-3xl font-bold text-accent glow-text mb-2">
-          🎯 CONUNDRUM
+          🎯 {t.conundrum}
         </h2>
         <p className="text-muted-foreground">
-          {phase === 'ready' && 'Unscramble the 9-letter word!'}
-          {phase === 'playing' && 'Find the hidden word!'}
-          {phase === 'result' && (solved ? 'Conundrum Solved!' : 'Time\'s Up!')}
+          {phase === 'ready' && t.unscrambleWord}
+          {phase === 'playing' && t.findHiddenWord}
+          {phase === 'result' && (solved ? t.conundrumSolved : t.timesUp)}
         </p>
       </div>
 
@@ -102,7 +104,7 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
           onClick={startRound}
           className="game-button-accent text-lg px-8 py-4 mt-4"
         >
-          Start Conundrum
+          {t.startConundrum}
         </button>
       )}
 
@@ -117,7 +119,7 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
           <div className="w-full max-w-md">
             <Input
               type="text"
-              placeholder="Type your answer..."
+              placeholder={t.typeYourAnswer}
               value={userGuess}
               onChange={(e) => setUserGuess(e.target.value.toUpperCase())}
               onKeyDown={handleKeyPress}
@@ -130,7 +132,7 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
             onClick={submitGuess}
             className="game-button-accent"
           >
-            Submit Answer
+            {t.submitAnswer}
           </button>
         </div>
       )}
@@ -141,23 +143,23 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
           <div className="text-center">
             {solved ? (
               <>
-                <p className="text-muted-foreground mb-2">You got it!</p>
+                <p className="text-muted-foreground mb-2">{t.youGotIt}</p>
                 <p className="font-display text-3xl font-bold text-accent mb-4">{answer}</p>
               </>
             ) : (
               <>
-                <p className="text-muted-foreground mb-2">The answer was:</p>
+                <p className="text-muted-foreground mb-2">{t.answerWas}</p>
                 <p className="font-display text-3xl font-bold text-foreground mb-4">{answer}</p>
               </>
             )}
-            <p className="text-muted-foreground">Points earned:</p>
+            <p className="text-muted-foreground">{t.pointsEarned}</p>
             <p className="score-display">{roundScore}</p>
           </div>
           <button 
             onClick={continueToNext}
             className="game-button-primary"
           >
-            See Final Score
+            {t.seeFinalScore}
           </button>
         </div>
       )}

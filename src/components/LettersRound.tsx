@@ -5,6 +5,7 @@ import { getRandomConsonant, getRandomVowel, isValidWord, canFormWord, calculate
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface LettersRoundProps {
   onRoundComplete: (score: number) => void;
@@ -12,6 +13,7 @@ interface LettersRoundProps {
 }
 
 export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps) => {
+  const { t } = useLanguage();
   const [letters, setLetters] = useState<string[]>([]);
   const [phase, setPhase] = useState<'picking' | 'playing' | 'result'>('picking');
   const [timerRunning, setTimerRunning] = useState(false);
@@ -28,7 +30,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
   const addConsonant = () => {
     if (letters.length >= MAX_LETTERS) return;
     if (consonantCount >= MAX_LETTERS - MIN_VOWELS) {
-      toast.error('You need at least 3 vowels!');
+      toast.error(t.needMinVowels);
       return;
     }
     const newLetter = getRandomConsonant();
@@ -40,7 +42,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
   const addVowel = () => {
     if (letters.length >= MAX_LETTERS) return;
     if (vowelCount >= MAX_LETTERS - MIN_CONSONANTS) {
-      toast.error('You need at least 4 consonants!');
+      toast.error(t.needMinConsonants);
       return;
     }
     const newLetter = getRandomVowel();
@@ -73,7 +75,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     }
 
     if (!canFormWord(word, letters)) {
-      toast.error("You can only use the available letters!");
+      toast.error(t.onlyUseAvailableLetters);
       soundEffects.playError();
       setRoundScore(0);
       setPhase('result');
@@ -85,7 +87,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     setIsValidating(false);
 
     if (!valid) {
-      toast.error("That's not a valid word!");
+      toast.error(t.notValidWord);
       soundEffects.playError();
       setRoundScore(0);
       setPhase('result');
@@ -95,7 +97,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     const score = calculateWordScore(word);
     setRoundScore(score);
     setPhase('result');
-    toast.success(`Great word! +${score} points`);
+    toast.success(t.greatWord(score));
     soundEffects.playSuccess();
   };
 
@@ -128,12 +130,12 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     <div className="flex flex-col items-center gap-8">
       <div className="text-center mb-4">
         <h2 className="font-display text-2xl md:text-3xl font-bold text-primary glow-text mb-2">
-          Letters Round
+          {t.lettersRound}
         </h2>
         <p className="text-muted-foreground">
-          {phase === 'picking' && `Pick ${MAX_LETTERS - letters.length} more letters`}
-          {phase === 'playing' && 'Make the longest word you can!'}
-          {phase === 'result' && 'Round Complete'}
+          {phase === 'picking' && t.pickMoreLetters(MAX_LETTERS - letters.length)}
+          {phase === 'playing' && t.makeLongestWord}
+          {phase === 'result' && t.roundComplete}
         </p>
       </div>
 
@@ -162,14 +164,14 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
             className="game-button-primary"
             disabled={letters.length >= MAX_LETTERS}
           >
-            Consonant
+            {t.consonant}
           </button>
           <button 
             onClick={addVowel}
             className="game-button-accent"
             disabled={letters.length >= MAX_LETTERS}
           >
-            Vowel
+            {t.vowel}
           </button>
         </div>
       )}
@@ -185,7 +187,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
           <div className="w-full max-w-md">
             <Input
               type="text"
-              placeholder="Type your word..."
+              placeholder={t.typeYourWord}
               value={userWord}
               onChange={(e) => setUserWord(e.target.value.toUpperCase())}
               onKeyDown={handleKeyPress}
@@ -201,7 +203,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
             className="game-button-primary"
             disabled={isValidating}
           >
-            {isValidating ? 'Checking...' : 'Submit Word'}
+            {isValidating ? t.checking : t.submitWord}
           </button>
         </div>
       )}
@@ -212,20 +214,20 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
           <div className="text-center">
             {userWord ? (
               <>
-                <p className="text-muted-foreground mb-2">Your word:</p>
+                <p className="text-muted-foreground mb-2">{t.yourWord}</p>
                 <p className="font-display text-3xl font-bold text-foreground mb-4">{userWord}</p>
               </>
             ) : (
-              <p className="text-muted-foreground mb-4">No word submitted</p>
+              <p className="text-muted-foreground mb-4">{t.noWordSubmitted}</p>
             )}
-            <p className="text-muted-foreground">Points earned:</p>
+            <p className="text-muted-foreground">{t.pointsEarned}</p>
             <p className="score-display">{roundScore}</p>
           </div>
           <button 
             onClick={continueToNext}
             className="game-button-primary"
           >
-            Continue
+            {t.continue}
           </button>
         </div>
       )}

@@ -4,6 +4,7 @@ import { CountdownTimer } from './CountdownTimer';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface NumbersRoundProps {
   onRoundComplete: (score: number) => void;
@@ -126,6 +127,7 @@ const generateSolvableTarget = (numbers: number[]): { target: number; solution: 
 };
 
 export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps) => {
+  const { t } = useLanguage();
   const [numbers, setNumbers] = useState<number[]>([]);
   const [target, setTarget] = useState(0);
   const [solution, setSolution] = useState('');
@@ -140,7 +142,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
   const pickLarge = () => {
     if (numbers.length >= 6) return;
     if (largeCount >= 4) {
-      toast.error('Maximum 4 large numbers!');
+      toast.error(t.maxLargeNumbers);
       return;
     }
     const availableLarge = LARGE_NUMBERS.filter(n => 
@@ -229,7 +231,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
 
     // Validate numbers used
     if (!validateNumbersUsed(answer)) {
-      toast.error("You can only use the available numbers, each once!");
+      toast.error(t.onlyUseAvailableNumbers);
       soundEffects.playError();
       setRoundScore(0);
       setPhase('result');
@@ -239,7 +241,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     const result = evaluateExpression(answer);
     
     if (result === null) {
-      toast.error("Invalid expression!");
+      toast.error(t.invalidExpression);
       soundEffects.playError();
       setRoundScore(0);
       setPhase('result');
@@ -251,18 +253,18 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
 
     if (diff === 0) {
       score = 10;
-      toast.success('Exact answer! +10 points');
+      toast.success(t.exactAnswer);
       soundEffects.playSuccess();
     } else if (diff <= 5) {
       score = 7;
-      toast.success(`Within 5! (${result}) +7 points`);
+      toast.success(t.within5(result));
       soundEffects.playSuccess();
     } else if (diff <= 10) {
       score = 5;
-      toast.success(`Within 10! (${result}) +5 points`);
+      toast.success(t.within10(result));
       soundEffects.playSuccess();
     } else {
-      toast.info(`Result: ${result} - Too far from target`);
+      toast.info(t.tooFarFromTarget(result));
       soundEffects.playError();
     }
 
@@ -300,19 +302,19 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     <div className="flex flex-col items-center gap-8">
       <div className="text-center mb-4">
         <h2 className="font-display text-2xl md:text-3xl font-bold text-primary glow-text mb-2">
-          Numbers Round
+          {t.numbersRound}
         </h2>
         <p className="text-muted-foreground">
-          {phase === 'picking' && `Pick ${6 - numbers.length} more numbers`}
-          {phase === 'playing' && 'Get as close to the target as you can!'}
-          {phase === 'result' && 'Round Complete'}
+          {phase === 'picking' && t.pickMoreNumbers(6 - numbers.length)}
+          {phase === 'playing' && t.getCloseToTarget}
+          {phase === 'result' && t.roundComplete}
         </p>
       </div>
 
       {/* Target display */}
       {target > 0 && (
         <div className="card-game text-center animate-pop-in">
-          <p className="text-muted-foreground text-sm uppercase tracking-wider mb-1">Target</p>
+          <p className="text-muted-foreground text-sm uppercase tracking-wider mb-1">{t.target}</p>
           <p className="font-display text-5xl md:text-6xl font-bold text-accent">
             {target}
           </p>
@@ -344,14 +346,14 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
             className="game-button-accent"
             disabled={numbers.length >= 6 || largeCount >= 4}
           >
-            Large ({largeCount}/4)
+            {t.large} ({largeCount}/4)
           </button>
           <button 
             onClick={pickSmall}
             className="game-button-primary"
             disabled={numbers.length >= 6}
           >
-            Small
+            {t.small}
           </button>
         </div>
       )}
@@ -367,7 +369,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
           <div className="w-full max-w-md">
             <Input
               type="text"
-              placeholder="e.g. [100 + 25] x 4"
+              placeholder={t.inputPlaceholder}
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value.replace(/=/g, '+'))}
               onKeyDown={handleKeyPress}
@@ -375,7 +377,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
               autoFocus
             />
             <p className="text-muted-foreground text-sm text-center mt-2">
-              Use +, -, *, / or x. Use [] or () for brackets.
+              {t.inputHint}
             </p>
           </div>
           <button 
@@ -385,7 +387,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
             }}
             className="game-button-primary"
           >
-            Submit Answer
+            {t.submitAnswer}
           </button>
         </div>
       )}
@@ -396,22 +398,22 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
           <div className="text-center">
             {userAnswer ? (
               <>
-                <p className="text-muted-foreground mb-2">Your calculation:</p>
+                <p className="text-muted-foreground mb-2">{t.yourCalculation}</p>
                 <p className="font-mono text-xl text-foreground mb-2">{userAnswer}</p>
                 <p className="text-muted-foreground mb-4">
-                  = {evaluateExpression(userAnswer) ?? 'Invalid'}
+                  = {evaluateExpression(userAnswer) ?? t.invalid}
                 </p>
               </>
             ) : (
-              <p className="text-muted-foreground mb-4">No answer submitted</p>
+              <p className="text-muted-foreground mb-4">{t.noAnswerSubmitted}</p>
             )}
-            <p className="text-muted-foreground">Points earned:</p>
+            <p className="text-muted-foreground">{t.pointsEarned}</p>
             <p className="score-display">{roundScore}</p>
           </div>
           
           {/* Show solution */}
           <div className="card-game text-center">
-            <p className="text-muted-foreground text-sm mb-2">One possible solution:</p>
+            <p className="text-muted-foreground text-sm mb-2">{t.onePossibleSolution}</p>
             <p className="font-mono text-lg text-primary">{solution}</p>
           </div>
           
@@ -419,7 +421,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
             onClick={continueToNext}
             className="game-button-primary"
           >
-            Continue
+            {t.continue}
           </button>
         </div>
       )}

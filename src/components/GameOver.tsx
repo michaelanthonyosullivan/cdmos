@@ -2,6 +2,7 @@ import { useEffect, useState, forwardRef } from 'react';
 import { HighScoreBoard } from './HighScoreBoard';
 import { saveHighScore, isNewHighScore, getHighScoreRank } from '@/lib/highScores';
 import { soundEffects } from '@/hooks/useSoundEffects';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface GameOverProps {
   score: number;
@@ -9,6 +10,7 @@ interface GameOverProps {
 }
 
 export const GameOver = forwardRef<HTMLDivElement, GameOverProps>(({ score, onPlayAgain }, ref) => {
+  const { t } = useLanguage();
   const [isNew, setIsNew] = useState(false);
   const [rank, setRank] = useState<number | undefined>(undefined);
 
@@ -27,10 +29,10 @@ export const GameOver = forwardRef<HTMLDivElement, GameOverProps>(({ score, onPl
   }, [score]);
 
   const getMessage = () => {
-    if (score >= 50) return "Outstanding! You're a Countdown champion!";
-    if (score >= 35) return "Great performance!";
-    if (score >= 20) return "Good effort!";
-    return "Keep practicing!";
+    if (score >= 50) return t.outstanding;
+    if (score >= 35) return t.greatPerformance;
+    if (score >= 20) return t.goodEffort;
+    return t.keepPracticing;
   };
 
   const handlePlayAgain = () => {
@@ -41,12 +43,12 @@ export const GameOver = forwardRef<HTMLDivElement, GameOverProps>(({ score, onPl
   return (
     <div ref={ref} className="flex flex-col items-center justify-center gap-8 text-center animate-slide-up">
       <h2 className="font-display text-3xl md:text-4xl font-bold text-primary glow-text">
-        Game Over
+        {t.gameOver}
       </h2>
       
       <div className="card-game">
         <p className="text-muted-foreground text-sm uppercase tracking-wider mb-2">
-          Final Score
+          {t.finalScore}
         </p>
         <p className="score-display text-6xl md:text-7xl">{score}</p>
       </div>
@@ -59,7 +61,7 @@ export const GameOver = forwardRef<HTMLDivElement, GameOverProps>(({ score, onPl
         onClick={handlePlayAgain}
         className="game-button-primary text-lg px-8 py-4"
       >
-        Play Again
+        {t.playAgain}
       </button>
 
       <HighScoreBoard 
