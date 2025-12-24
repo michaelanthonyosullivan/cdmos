@@ -6,10 +6,13 @@ import { NumbersRound } from '@/components/NumbersRound';
 import { ConundrumRound } from '@/components/ConundrumRound';
 import { GameOver } from '@/components/GameOver';
 import { HighScoreBoard } from '@/components/HighScoreBoard';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useLanguage } from '@/hooks/useLanguage';
 
 type GamePhase = 'start' | 'letters' | 'numbers' | 'conundrum' | 'gameover';
 
 const Index = () => {
+  const { t } = useLanguage();
   const [phase, setPhase] = useState<GamePhase>('start');
   const [score, setScore] = useState(0);
   const [currentRound, setCurrentRound] = useState(1);
@@ -68,6 +71,13 @@ const Index = () => {
         <GameHeader score={score} round={currentRound} totalRounds={TOTAL_ROUNDS} />
       )}
       
+      {/* Language switcher on start screen */}
+      {phase === 'start' && (
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher />
+        </div>
+      )}
+      
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-3xl">
           {phase === 'start' && (
@@ -108,7 +118,7 @@ const Index = () => {
       
       {/* Footer */}
       <footer className="py-4 text-center text-muted-foreground text-sm">
-        <p>Inspired by the classic TV show - reimagined by Michael O'Sullivan</p>
+        <p>{t.footer}</p>
       </footer>
     </div>
   );

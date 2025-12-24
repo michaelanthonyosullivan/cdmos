@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Trophy, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface HighScoreBoardProps {
   currentScore?: number;
@@ -11,6 +12,7 @@ interface HighScoreBoardProps {
 }
 
 export const HighScoreBoard = ({ currentScore, isNewHighScore, rank }: HighScoreBoardProps) => {
+  const { t } = useLanguage();
   const [scores, setScores] = useState<HighScore[]>([]);
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export const HighScoreBoard = ({ currentScore, isNewHighScore, rank }: HighScore
     clearHighScores();
     setScores([]);
     soundEffects.playClick();
-    toast.success('High scores cleared');
+    toast.success(t.highScoresCleared);
   };
 
   if (scores.length === 0 && !currentScore) {
@@ -33,13 +35,13 @@ export const HighScoreBoard = ({ currentScore, isNewHighScore, rank }: HighScore
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Trophy className="w-5 h-5 text-score-gold" />
-          <h3 className="font-display text-lg font-bold text-foreground">High Scores</h3>
+          <h3 className="font-display text-lg font-bold text-foreground">{t.highScores}</h3>
         </div>
         {scores.length > 0 && (
           <button
             onClick={handleClear}
             className="text-muted-foreground hover:text-destructive transition-colors p-1"
-            title="Clear high scores"
+            title={t.clearHighScores}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -48,7 +50,7 @@ export const HighScoreBoard = ({ currentScore, isNewHighScore, rank }: HighScore
 
       {isNewHighScore && rank && (
         <div className="bg-accent/20 border border-accent/30 rounded-lg p-3 mb-4 text-center animate-pulse">
-          <p className="text-accent font-bold">🎉 New High Score! Rank #{rank}</p>
+          <p className="text-accent font-bold">{t.newHighScore(rank)}</p>
         </div>
       )}
 
@@ -70,7 +72,7 @@ export const HighScoreBoard = ({ currentScore, isNewHighScore, rank }: HighScore
               }`}>
                 #{index + 1}
               </span>
-              <span className="text-foreground font-medium">{score.score} pts</span>
+              <span className="text-foreground font-medium">{score.score} {t.pts}</span>
             </div>
             <span className="text-muted-foreground text-sm">{score.date}</span>
           </div>
@@ -79,7 +81,7 @@ export const HighScoreBoard = ({ currentScore, isNewHighScore, rank }: HighScore
 
       {scores.length === 0 && (
         <p className="text-muted-foreground text-center py-4">
-          No high scores yet. Play a game!
+          {t.noHighScoresYet}
         </p>
       )}
     </div>
