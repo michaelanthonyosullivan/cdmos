@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
 import { useLanguage } from '@/hooks/useLanguage';
+import { VirtualNumberKeyboard } from './VirtualNumberKeyboard';
 
 interface NumbersRoundProps {
   onRoundComplete: (score: number) => void;
@@ -380,6 +381,12 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
               {t.inputHint}
             </p>
           </div>
+          <VirtualNumberKeyboard
+            numbers={numbers}
+            onInsert={(value) => setUserAnswer(prev => prev + value)}
+            onDelete={() => setUserAnswer(prev => prev.slice(0, -1))}
+            onClear={() => setUserAnswer('')}
+          />
           <button 
             onClick={() => {
               setTimerRunning(false);

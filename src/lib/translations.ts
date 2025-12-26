@@ -104,7 +104,7 @@ export const translations = {
     // App title
     title: 'DES CHIFFRES',
     titleSuffix: 'ET DES LETTRES',
-    tagline: 'Le jeu classique de mots et de chiffres',
+    tagline: 'Le jeu classique des mots et des chiffres',
     
     // How to play
     howToPlay: 'Comment jouer',
