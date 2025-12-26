@@ -6,14 +6,14 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
 import { useLanguage } from '@/hooks/useLanguage';
-
+import { VirtualLetterKeyboard } from './VirtualLetterKeyboard';
 interface LettersRoundProps {
   onRoundComplete: (score: number) => void;
   roundNumber: number;
 }
 
 export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [letters, setLetters] = useState<string[]>([]);
   const [phase, setPhase] = useState<'picking' | 'playing' | 'result'>('picking');
   const [timerRunning, setTimerRunning] = useState(false);
@@ -83,7 +83,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     }
 
     setIsValidating(true);
-    const valid = await isValidWord(word);
+    const valid = await isValidWord(word, language);
     setIsValidating(false);
 
     if (!valid) {
@@ -195,6 +195,12 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
               autoFocus
             />
           </div>
+          <VirtualLetterKeyboard
+            letters={letters}
+            onInsert={(letter) => setUserWord(prev => prev + letter)}
+            onDelete={() => setUserWord(prev => prev.slice(0, -1))}
+            onClear={() => setUserWord('')}
+          />
           <button 
             onClick={() => {
               setTimerRunning(false);

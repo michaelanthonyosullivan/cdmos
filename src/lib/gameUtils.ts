@@ -49,19 +49,32 @@ const COMMON_WORDS = new Set([
 ]);
 
 // Check word validity using Free Dictionary API
-export const isValidWord = async (word: string): Promise<boolean> => {
+export const isValidWord = async (word: string, language: 'en' | 'fr' = 'en'): Promise<boolean> => {
   // First check our local list for common words (faster)
-  if (COMMON_WORDS.has(word.toLowerCase())) {
-    return true;
-  }
-  
-  // If not in local list, check the dictionary API
-  try {
-    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
-    return response.ok;
-  } catch {
-    // If API fails, fall back to local list only
-    return false;
+  if (language === 'en') {
+    if (COMMON_WORDS.has(word.toLowerCase())) {
+      return true;
+    }
+    // If not in local list, check the dictionary API
+    try {
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
+      return response.ok;
+    } catch {
+      return false;
+    }
+  } else {
+    // French validation - use local French dictionary
+    const { FRENCH_WORDS } = await import('./frenchWords');
+    if (FRENCH_WORDS.has(word.toLowerCase())) {
+      return true;
+    }
+    // Try French dictionary API
+    try {
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/fr/${word.toLowerCase()}`);
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 };
 

@@ -14,7 +14,7 @@ export const StartScreen = ({ onStart }: StartScreenProps) => {
           <span className="text-primary">{t.title}</span>
           <span className="text-accent">{t.titleSuffix}</span>
         </h1>
-        <p className="text-muted-foreground text-lg md:text-xl max-w-md">
+        <p className="text-muted-foreground text-lg md:text-xl max-w-md text-center">
           {t.tagline}
         </p>
       </div>
