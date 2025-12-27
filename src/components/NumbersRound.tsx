@@ -384,8 +384,6 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
           <VirtualNumberKeyboard
             numbers={numbers}
             onInsert={(value) => setUserAnswer(prev => prev + value)}
-            onDelete={() => setUserAnswer(prev => prev.slice(0, -1))}
-            onClear={() => setUserAnswer('')}
           />
           <button 
             onClick={() => {

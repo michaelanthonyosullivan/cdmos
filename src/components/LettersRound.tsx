@@ -198,8 +198,6 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
           <VirtualLetterKeyboard
             letters={letters}
             onInsert={(letter) => setUserWord(prev => prev + letter)}
-            onDelete={() => setUserWord(prev => prev.slice(0, -1))}
-            onClear={() => setUserWord('')}
           />
           <button 
             onClick={() => {

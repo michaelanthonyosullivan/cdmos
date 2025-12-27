@@ -1,13 +1,11 @@
 interface VirtualLetterKeyboardProps {
   letters: string[];
   onInsert: (letter: string) => void;
-  onDelete: () => void;
-  onClear: () => void;
 }
 
-export const VirtualLetterKeyboard = ({ letters, onInsert, onDelete, onClear }: VirtualLetterKeyboardProps) => {
+export const VirtualLetterKeyboard = ({ letters, onInsert }: VirtualLetterKeyboardProps) => {
   return (
-    <div className="w-full max-w-md space-y-3">
+    <div className="w-full max-w-md">
       {/* Available letters */}
       <div className="flex flex-wrap justify-center gap-2">
         {letters.map((letter, index) => (
@@ -19,22 +17,6 @@ export const VirtualLetterKeyboard = ({ letters, onInsert, onDelete, onClear }: 
             {letter}
           </button>
         ))}
-      </div>
-      
-      {/* Action buttons */}
-      <div className="flex justify-center gap-2">
-        <button
-          onClick={onDelete}
-          className="px-4 h-10 rounded-lg bg-muted border border-border text-muted-foreground font-medium hover:bg-destructive hover:text-destructive-foreground transition-colors"
-        >
-          ⌫
-        </button>
-        <button
-          onClick={onClear}
-          className="px-4 h-10 rounded-lg bg-muted border border-border text-muted-foreground font-medium hover:bg-destructive hover:text-destructive-foreground transition-colors"
-        >
-          Clear
-        </button>
       </div>
     </div>
   );
