@@ -7,9 +7,12 @@ import { ConundrumRound } from '@/components/ConundrumRound';
 import { GameOver } from '@/components/GameOver';
 import { HighScoreBoard } from '@/components/HighScoreBoard';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { Settings } from '@/components/Settings';
 import { useLanguage } from '@/hooks/useLanguage';
+import { Button } from '@/components/ui/button';
+import { Settings as SettingsIcon } from 'lucide-react';
 
-type GamePhase = 'start' | 'letters' | 'numbers' | 'conundrum' | 'gameover';
+type GamePhase = 'start' | 'letters' | 'numbers' | 'conundrum' | 'gameover' | 'settings';
 
 const Index = () => {
   const { t } = useLanguage();
@@ -62,7 +65,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* SEO */}
       <title>Countdown - Word & Numbers Game</title>
       <meta name="description" content="Play Countdown online - the classic British TV game show. Challenge yourself with letters and numbers rounds!" />
@@ -71,20 +74,34 @@ const Index = () => {
         <GameHeader score={score} round={currentRound} totalRounds={TOTAL_ROUNDS} />
       )}
       
-      {/* Language switcher on start screen */}
+      {/* Language switcher and settings button on start screen */}
       {phase === 'start' && (
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setPhase('settings')}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <SettingsIcon className="h-5 w-5" />
+          </Button>
           <LanguageSwitcher />
         </div>
       )}
       
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-3xl">
+      <main className="flex-1 flex items-center justify-center p-4 md:p-6 overflow-hidden">
+        <div className="w-full max-w-3xl h-full flex flex-col items-center justify-center overflow-y-auto">
           {phase === 'start' && (
             <>
               <StartScreen onStart={startGame} />
               <HighScoreBoard />
             </>
+          )}
+          
+          {phase === 'settings' && (
+            <div className="w-full flex flex-col items-center gap-4">
+              <Settings onClose={() => setPhase('start')} />
+            </div>
           )}
           
           {phase === 'letters' && (
@@ -116,10 +133,12 @@ const Index = () => {
         </div>
       </main>
       
-      {/* Footer */}
-      <footer className="py-4 text-center text-muted-foreground text-sm">
-        <p>{t.footer}</p>
-      </footer>
+      {/* Footer - only show on start screen */}
+      {phase === 'start' && (
+        <footer className="py-2 md:py-4 text-center text-muted-foreground text-xs md:text-sm">
+          <p>{t.footer}</p>
+        </footer>
+      )}
     </div>
   );
 };

@@ -41,25 +41,25 @@ export const GameOver = forwardRef<HTMLDivElement, GameOverProps>(({ score, onPl
   };
 
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center gap-8 text-center animate-slide-up">
-      <h2 className="font-display text-3xl md:text-4xl font-bold text-primary glow-text">
+    <div ref={ref} className="flex flex-col items-center justify-center gap-4 md:gap-6 lg:gap-8 text-center animate-slide-up w-full max-h-full overflow-y-auto">
+      <h2 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-primary glow-text">
         {t.gameOver}
       </h2>
       
-      <div className="card-game">
-        <p className="text-muted-foreground text-sm uppercase tracking-wider mb-2">
+      <div className="card-game p-4 md:p-6">
+        <p className="text-muted-foreground text-xs md:text-sm uppercase tracking-wider mb-2">
           {t.finalScore}
         </p>
-        <p className="score-display text-6xl md:text-7xl">{score}</p>
+        <p className="score-display text-4xl md:text-5xl lg:text-6xl xl:text-7xl">{score}</p>
       </div>
       
-      <p className="text-xl text-foreground max-w-md">
+      <p className="text-base md:text-lg lg:text-xl text-foreground max-w-md px-4">
         {getMessage()}
       </p>
       
       <button 
         onClick={handlePlayAgain}
-        className="game-button-primary text-lg px-8 py-4"
+        className="game-button-primary text-base md:text-lg px-6 md:px-8 py-3 md:py-4"
       >
         {t.playAgain}
       </button>

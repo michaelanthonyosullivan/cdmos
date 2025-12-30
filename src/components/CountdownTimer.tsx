@@ -100,7 +100,11 @@ export const CountdownTimer = forwardRef<HTMLDivElement, CountdownTimerProps>(({
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <span 
-          className={`font-display text-5xl font-bold transition-colors duration-300 ${
+          className={`font-display font-bold transition-colors duration-300 ${
+            size <= 120 
+              ? 'text-3xl md:text-4xl' 
+              : 'text-4xl md:text-5xl'
+          } ${
             timeLeft <= 5 
               ? 'text-timer-danger' 
               : timeLeft <= 10 

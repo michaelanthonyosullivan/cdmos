@@ -1,33 +1,57 @@
 interface VirtualNumberKeyboardProps {
   numbers: number[];
+  usedNumbers?: number[];
   onInsert: (value: string) => void;
 }
 
-export const VirtualNumberKeyboard = ({ numbers, onInsert }: VirtualNumberKeyboardProps) => {
+export const VirtualNumberKeyboard = ({ numbers, usedNumbers = [], onInsert }: VirtualNumberKeyboardProps) => {
   const operators = ['+', '-', '×', '÷', '(', ')'];
 
+  const getNumberUsageCount = (num: number): number => {
+    return usedNumbers.filter(n => n === num).length;
+  };
+
+  const getAvailableCount = (num: number): number => {
+    return numbers.filter(n => n === num).length;
+  };
+
+  const isNumberUsed = (num: number, index: number): boolean => {
+    // Count how many times this number appears before this index
+    const occurrencesBefore = numbers.slice(0, index).filter(n => n === num).length;
+    const usedCount = getNumberUsageCount(num);
+    return usedCount > occurrencesBefore;
+  };
+
   return (
-    <div className="w-full max-w-md space-y-3">
+    <div className="w-full max-w-md space-y-2 md:space-y-3">
       {/* Available numbers */}
-      <div className="flex flex-wrap justify-center gap-2">
-        {numbers.map((num, index) => (
-          <button
-            key={index}
-            onClick={() => onInsert(num.toString())}
-            className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-secondary border border-border text-foreground font-bold text-lg hover:bg-primary hover:text-primary-foreground transition-colors"
-          >
-            {num}
-          </button>
-        ))}
+      <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
+        {numbers.map((num, index) => {
+          const isUsed = isNumberUsed(num, index);
+          return (
+            <button
+              key={index}
+              onClick={() => !isUsed && onInsert(num.toString())}
+              disabled={isUsed}
+              className={`w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg border font-bold text-sm md:text-base lg:text-lg transition-colors ${
+                isUsed
+                  ? 'bg-muted border-muted text-muted-foreground opacity-50 cursor-not-allowed'
+                  : 'bg-secondary border-border text-foreground hover:bg-primary hover:text-primary-foreground'
+              }`}
+            >
+              {num}
+            </button>
+          );
+        })}
       </div>
       
       {/* Operators */}
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
         {operators.map((op) => (
           <button
             key={op}
             onClick={() => onInsert(op === '×' ? '*' : op === '÷' ? '/' : op)}
-            className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-accent/20 border border-accent/50 text-accent font-bold text-xl hover:bg-accent hover:text-accent-foreground transition-colors"
+            className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg bg-accent/20 border border-accent/50 text-accent font-bold text-base md:text-lg lg:text-xl hover:bg-accent hover:text-accent-foreground transition-colors"
           >
             {op}
           </button>

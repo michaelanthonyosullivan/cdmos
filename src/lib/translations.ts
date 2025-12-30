@@ -33,6 +33,7 @@ export const translations = {
     yourWord: 'Your word:',
     noWordSubmitted: 'No word submitted',
     pointsEarned: 'Points earned:',
+    longestWordExample: 'Longest word example:',
     onlyUseAvailableLetters: 'You can only use the available letters!',
     notValidWord: "That's not a valid word!",
     greatWord: (points: number) => `Great word! +${points} points`,
@@ -99,11 +100,17 @@ export const translations = {
     language: 'Language',
     english: 'English',
     french: 'Français',
+    
+    // Settings
+    settings: 'Settings',
+    settingsDescription: 'Configure your game preferences',
+    timeoutDuration: 'Timeout Duration',
+    close: 'Close',
   },
   fr: {
     // App title
     title: 'DES CHIFFRES',
-    titleSuffix: 'ET DES LETTRES',
+    titleSuffix: ' ET DES LETTRES',
     tagline: 'Le jeu classique des mots et des chiffres',
     
     // How to play
@@ -132,6 +139,7 @@ export const translations = {
     yourWord: 'Votre mot :',
     noWordSubmitted: 'Aucun mot soumis',
     pointsEarned: 'Points gagnés :',
+    longestWordExample: 'Exemple de mot le plus long :',
     onlyUseAvailableLetters: 'Vous ne pouvez utiliser que les lettres disponibles !',
     notValidWord: "Ce n'est pas un mot valide !",
     greatWord: (points: number) => `Excellent mot ! +${points} points`,
@@ -198,6 +206,12 @@ export const translations = {
     language: 'Langue',
     english: 'English',
     french: 'Français',
+    
+    // Settings
+    settings: 'Paramètres',
+    settingsDescription: 'Configurez vos préférences de jeu',
+    timeoutDuration: 'Durée du délai',
+    close: 'Fermer',
   },
 } as const;
 

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useSettings } from '@/hooks/useSettings';
 import { VirtualNumberKeyboard } from './VirtualNumberKeyboard';
 
 interface NumbersRoundProps {
@@ -129,6 +130,7 @@ const generateSolvableTarget = (numbers: number[]): { target: number; solution: 
 
 export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps) => {
   const { t } = useLanguage();
+  const { settings } = useSettings();
   const [numbers, setNumbers] = useState<number[]>([]);
   const [target, setTarget] = useState(0);
   const [solution, setSolution] = useState('');
@@ -137,6 +139,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
   const [userAnswer, setUserAnswer] = useState('');
   const [roundScore, setRoundScore] = useState(0);
   const [largeCount, setLargeCount] = useState(0);
+  const [usedNumbers, setUsedNumbers] = useState<number[]>([]);
 
   const LARGE_NUMBERS = [25, 50, 75, 100];
 
@@ -175,11 +178,6 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
       }, 500);
     }
   }, [numbers.length, phase]);
-
-  const handleTimerComplete = useCallback(() => {
-    setTimerRunning(false);
-    submitAnswer();
-  }, [userAnswer, target]);
 
   const evaluateExpression = (expr: string): number | null => {
     try {
@@ -273,12 +271,32 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     setPhase('result');
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleTimerComplete = () => {
+    setTimerRunning(false);
+    submitAnswer();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && phase === 'playing') {
+      e.preventDefault();
+      e.stopPropagation();
       setTimerRunning(false);
       submitAnswer();
     }
   };
+
+  // Track used numbers from the input
+  useEffect(() => {
+    if (phase !== 'playing') {
+      setUsedNumbers([]);
+      return;
+    }
+    
+    const normalized = normalizeExpression(userAnswer);
+    const numbersInExpr = normalized.match(/\d+/g) || [];
+    const used = numbersInExpr.map(n => parseInt(n, 10));
+    setUsedNumbers(used);
+  }, [userAnswer, phase]);
 
   const continueToNext = () => {
     onRoundComplete(roundScore);
@@ -300,12 +318,12 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
   }, [roundNumber]);
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="text-center mb-4">
-        <h2 className="font-display text-2xl md:text-3xl font-bold text-primary glow-text mb-2">
+    <div className="flex flex-col items-center gap-4 md:gap-6 w-full max-h-full overflow-y-auto">
+      <div className="text-center mb-2 md:mb-4">
+        <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-primary glow-text mb-1 md:mb-2">
           {t.numbersRound}
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm md:text-base">
           {phase === 'picking' && t.pickMoreNumbers(6 - numbers.length)}
           {phase === 'playing' && t.getCloseToTarget}
           {phase === 'result' && t.roundComplete}
@@ -314,9 +332,9 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
 
       {/* Target display */}
       {target > 0 && (
-        <div className="card-game text-center animate-pop-in">
-          <p className="text-muted-foreground text-sm uppercase tracking-wider mb-1">{t.target}</p>
-          <p className="font-display text-5xl md:text-6xl font-bold text-accent">
+        <div className="card-game text-center animate-pop-in p-4 md:p-6">
+          <p className="text-muted-foreground text-xs md:text-sm uppercase tracking-wider mb-1">{t.target}</p>
+          <p className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-accent">
             {target}
           </p>
         </div>
@@ -361,11 +379,12 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
 
       {/* Playing phase */}
       {phase === 'playing' && (
-        <div className="flex flex-col items-center gap-6 mt-4">
+        <div className="flex flex-col items-center gap-3 md:gap-4 mt-2 md:mt-4">
           <CountdownTimer 
-            duration={30} 
+            duration={settings.numbersTimeoutDuration} 
             isRunning={timerRunning}
             onComplete={handleTimerComplete}
+            size={120}
           />
           <div className="w-full max-w-md">
             <Input
@@ -373,16 +392,17 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
               placeholder={t.inputPlaceholder}
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value.replace(/=/g, '+'))}
-              onKeyDown={handleKeyPress}
-              className="text-center font-mono text-xl h-14 bg-secondary border-border focus:border-primary"
+              onKeyDown={handleKeyDown}
+              className="text-center font-mono text-lg md:text-xl h-12 md:h-14 bg-secondary border-border focus:border-primary"
               autoFocus
             />
-            <p className="text-muted-foreground text-sm text-center mt-2">
+            <p className="text-muted-foreground text-xs md:text-sm text-center mt-1 md:mt-2">
               {t.inputHint}
             </p>
           </div>
           <VirtualNumberKeyboard
             numbers={numbers}
+            usedNumbers={usedNumbers}
             onInsert={(value) => setUserAnswer(prev => prev + value)}
           />
           <button 

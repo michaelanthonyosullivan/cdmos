@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useSettings } from '@/hooks/useSettings';
 
 interface ConundrumRoundProps {
   onRoundComplete: (score: number) => void;
@@ -13,6 +14,7 @@ interface ConundrumRoundProps {
 
 export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
   const { t } = useLanguage();
+  const { settings } = useSettings();
   const [answer, setAnswer] = useState('');
   const [scrambled, setScrambled] = useState('');
   const [phase, setPhase] = useState<'ready' | 'playing' | 'result'>('ready');
@@ -63,8 +65,9 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && phase === 'playing') {
+      e.preventDefault();
       submitGuess();
     }
   };
@@ -74,12 +77,12 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="text-center mb-4">
-        <h2 className="font-display text-2xl md:text-3xl font-bold text-accent glow-text mb-2">
+    <div className="flex flex-col items-center gap-4 md:gap-6 w-full max-h-full overflow-y-auto">
+      <div className="text-center mb-2 md:mb-4">
+        <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-accent glow-text mb-1 md:mb-2">
           🎯 {t.conundrum}
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm md:text-base">
           {phase === 'ready' && t.unscrambleWord}
           {phase === 'playing' && t.findHiddenWord}
           {phase === 'result' && (solved ? t.conundrumSolved : t.timesUp)}
@@ -87,7 +90,7 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
       </div>
 
       {/* Scrambled letter tiles */}
-      <div className="flex flex-wrap justify-center gap-2 md:gap-3 max-w-xl">
+      <div className="flex flex-wrap justify-center gap-1.5 md:gap-2 lg:gap-3 max-w-xl">
         {scrambled.split('').map((letter, index) => (
           <LetterTile 
             key={index} 
@@ -110,11 +113,12 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
 
       {/* Playing phase */}
       {phase === 'playing' && (
-        <div className="flex flex-col items-center gap-6 mt-4">
+        <div className="flex flex-col items-center gap-3 md:gap-4 mt-2 md:mt-4">
           <CountdownTimer 
-            duration={30} 
+            duration={settings.conundrumTimeoutDuration} 
             isRunning={timerRunning}
             onComplete={handleTimerComplete}
+            size={120}
           />
           <div className="w-full max-w-md">
             <Input
@@ -122,8 +126,8 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
               placeholder={t.typeYourAnswer}
               value={userGuess}
               onChange={(e) => setUserGuess(e.target.value.toUpperCase())}
-              onKeyDown={handleKeyPress}
-              className="text-center font-display text-2xl h-14 uppercase tracking-wider bg-secondary border-border focus:border-accent"
+              onKeyDown={handleKeyDown}
+              className="text-center font-display text-xl md:text-2xl h-12 md:h-14 uppercase tracking-wider bg-secondary border-border focus:border-accent"
               autoFocus
               maxLength={9}
             />

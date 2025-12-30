@@ -65,13 +65,38 @@ export const isValidWord = async (word: string, language: 'en' | 'fr' = 'en'): P
   } else {
     // French validation - use local French dictionary
     const { FRENCH_WORDS } = await import('./frenchWords');
-    if (FRENCH_WORDS.has(word.toLowerCase())) {
+    const lowerWord = word.toLowerCase();
+    
+    // Check exact match
+    if (FRENCH_WORDS.has(lowerWord)) {
       return true;
     }
-    // Try French dictionary API
+    
+    // Also check without accents for common words
+    const withoutAccents = lowerWord
+      .replace(/[àáâãäå]/g, 'a')
+      .replace(/[èéêë]/g, 'e')
+      .replace(/[ìíîï]/g, 'i')
+      .replace(/[òóôõö]/g, 'o')
+      .replace(/[ùúûü]/g, 'u')
+      .replace(/[ç]/g, 'c');
+    
+    if (withoutAccents !== lowerWord && FRENCH_WORDS.has(withoutAccents)) {
+      return true;
+    }
+    
+    // Try French dictionary API as fallback
     try {
-      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/fr/${word.toLowerCase()}`);
-      return response.ok;
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/fr/${lowerWord}`);
+      if (response.ok) {
+        return true;
+      }
+      // Also try without accents
+      if (withoutAccents !== lowerWord) {
+        const responseNoAccents = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/fr/${withoutAccents}`);
+        return responseNoAccents.ok;
+      }
+      return false;
     } catch {
       return false;
     }
@@ -98,4 +123,34 @@ export const canFormWord = (word: string, availableLetters: string[]): boolean =
 
 export const calculateWordScore = (word: string): number => {
   return word.length;
+};
+
+// Find the longest valid word that can be formed from available letters
+export const findLongestWord = async (availableLetters: string[], language: 'en' | 'fr' = 'en'): Promise<string | null> => {
+  if (language === 'en') {
+    // Sort words by length descending, then check each one
+    const sortedWords = Array.from(COMMON_WORDS).sort((a, b) => b.length - a.length);
+    
+    for (const word of sortedWords) {
+      if (canFormWord(word, availableLetters)) {
+        return word.toUpperCase();
+      }
+    }
+    
+    // If not found in local dictionary, try API (but this is slower, so we limit to longer words)
+    // For now, return null if not found locally
+    return null;
+  } else {
+    // French: use local dictionary
+    const { FRENCH_WORDS } = await import('./frenchWords');
+    const sortedWords = Array.from(FRENCH_WORDS).sort((a, b) => b.length - a.length);
+    
+    for (const word of sortedWords) {
+      if (canFormWord(word, availableLetters)) {
+        return word.toUpperCase();
+      }
+    }
+    
+    return null;
+  }
 };
