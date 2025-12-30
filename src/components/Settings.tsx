@@ -126,6 +126,46 @@ export const Settings = ({ onClose }: SettingsProps) => {
             ))}
           </div>
         </div>
+
+        {/* Conundrum Timeout */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="conundrum-timeout" className="text-base">
+              {t.conundrumRound || 'Conundrum Round'} {t.timeoutDuration || 'Timeout'}
+            </Label>
+            <span className="font-display text-lg font-semibold text-accent">
+              {formatDuration(settings.conundrumTimeoutDuration)}
+            </span>
+          </div>
+          <div className="space-y-2">
+            <Slider
+              id="conundrum-timeout"
+              min={30}
+              max={300}
+              step={30}
+              value={[settings.conundrumTimeoutDuration]}
+              onValueChange={(value) => updateSettings({ conundrumTimeoutDuration: value[0] })}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>30s</span>
+              <span>5min</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-5 gap-2 pt-2">
+            {timeoutOptions.map((option) => (
+              <Button
+                key={`conundrum-${option.value}`}
+                variant={settings.conundrumTimeoutDuration === option.value ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => updateSettings({ conundrumTimeoutDuration: option.value })}
+                className="text-xs"
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        </div>
         {onClose && (
           <Button onClick={onClose} className="w-full game-button-primary">
             {t.close || 'Close'}

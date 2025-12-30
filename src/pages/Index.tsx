@@ -10,9 +10,9 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Settings } from '@/components/Settings';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Trophy } from 'lucide-react';
 
-type GamePhase = 'start' | 'letters' | 'numbers' | 'conundrum' | 'gameover' | 'settings';
+type GamePhase = 'start' | 'letters' | 'numbers' | 'conundrum' | 'gameover' | 'settings' | 'highscores';
 
 const Index = () => {
   const { t } = useLanguage();
@@ -20,7 +20,7 @@ const Index = () => {
   const [score, setScore] = useState(0);
   const [currentRound, setCurrentRound] = useState(1);
   const [roundKey, setRoundKey] = useState(0);
-  
+
   const TOTAL_ROUNDS = 7; // 3 letters + 3 numbers + 1 conundrum
 
   const startGame = () => {
@@ -32,7 +32,7 @@ const Index = () => {
 
   const handleRoundComplete = (roundScore: number) => {
     setScore(prev => prev + roundScore);
-    
+
     // After round 6 (3 letters + 3 numbers), go to conundrum
     if (currentRound === 6) {
       setCurrentRound(7);
@@ -42,7 +42,7 @@ const Index = () => {
     } else {
       setCurrentRound(prev => prev + 1);
       setRoundKey(prev => prev + 1);
-      
+
       // Alternate between letters and numbers
       if (phase === 'letters') {
         setPhase('numbers');
@@ -69,14 +69,23 @@ const Index = () => {
       {/* SEO */}
       <title>Countdown - Word & Numbers Game</title>
       <meta name="description" content="Play Countdown online - the classic British TV game show. Challenge yourself with letters and numbers rounds!" />
-      
+
       {phase !== 'start' && phase !== 'gameover' && (
         <GameHeader score={score} round={currentRound} totalRounds={TOTAL_ROUNDS} />
       )}
-      
+
       {/* Language switcher and settings button on start screen */}
       {phase === 'start' && (
         <div className="absolute top-4 right-4 flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setPhase('highscores')}
+            className="text-muted-foreground hover:text-foreground"
+            title={t.highScores}
+          >
+            <Trophy className="h-5 w-5" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -88,32 +97,38 @@ const Index = () => {
           <LanguageSwitcher />
         </div>
       )}
-      
+
       <main className="flex-1 flex items-center justify-center p-4 md:p-6 overflow-hidden">
         <div className="w-full max-w-3xl h-full flex flex-col items-center justify-center overflow-y-auto">
           {phase === 'start' && (
-            <>
-              <StartScreen onStart={startGame} />
-              <HighScoreBoard />
-            </>
+            <StartScreen onStart={startGame} />
           )}
-          
+
+          {phase === 'highscores' && (
+            <div className="w-full flex flex-col items-center gap-4">
+              <HighScoreBoard />
+              <Button onClick={() => setPhase('start')} className="game-button-primary mt-4">
+                {t.close || 'Back'}
+              </Button>
+            </div>
+          )}
+
           {phase === 'settings' && (
             <div className="w-full flex flex-col items-center gap-4">
               <Settings onClose={() => setPhase('start')} />
             </div>
           )}
-          
+
           {phase === 'letters' && (
-            <LettersRound 
+            <LettersRound
               key={`letters-${roundKey}`}
               onRoundComplete={handleRoundComplete}
               roundNumber={roundKey}
             />
           )}
-          
+
           {phase === 'numbers' && (
-            <NumbersRound 
+            <NumbersRound
               key={`numbers-${roundKey}`}
               onRoundComplete={handleRoundComplete}
               roundNumber={roundKey}
@@ -121,18 +136,18 @@ const Index = () => {
           )}
 
           {phase === 'conundrum' && (
-            <ConundrumRound 
+            <ConundrumRound
               key="conundrum"
               onRoundComplete={handleConundrumComplete}
             />
           )}
-          
+
           {phase === 'gameover' && (
             <GameOver score={score} onPlayAgain={resetGame} />
           )}
         </div>
       </main>
-      
+
       {/* Footer - only show on start screen */}
       {phase === 'start' && (
         <footer className="py-2 md:py-4 text-center text-muted-foreground text-xs md:text-sm">

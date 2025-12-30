@@ -64,6 +64,25 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
     }
   }, [letters.length, phase]);
 
+  // Global Enter key listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        if (phase === 'playing') {
+          e.preventDefault();
+          setTimerRunning(false);
+          submitWord();
+        } else if (phase === 'result') {
+          e.preventDefault();
+          onRoundComplete(roundScore);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [phase, roundScore, onRoundComplete, letters, userWord]); // Dependencies for submitWord logic included implicitly or explicitly
+
   const handleTimerComplete = useCallback(() => {
     setTimerRunning(false);
     submitWord();
@@ -71,7 +90,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
 
   const submitWord = async () => {
     const word = userWord.trim().toUpperCase();
-    
+
     if (!word) {
       setRoundScore(0);
       setPhase('result');
@@ -119,7 +138,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
       setUsedLetters([]);
       return;
     }
-    
+
     const word = userWord.toUpperCase();
     setUsedLetters(word.split(''));
   }, [userWord, phase]);
@@ -169,14 +188,14 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
       {/* Letter tiles */}
       <div className="flex flex-wrap justify-center gap-1.5 md:gap-2 lg:gap-3 max-w-xl">
         {letters.map((letter, index) => (
-          <LetterTile 
-            key={index} 
-            letter={letter} 
+          <LetterTile
+            key={index}
+            letter={letter}
             delay={index * 100}
           />
         ))}
         {Array.from({ length: MAX_LETTERS - letters.length }).map((_, index) => (
-          <div 
+          <div
             key={`empty-${index}`}
             className="w-12 h-16 md:w-16 md:h-20 lg:w-20 lg:h-24 rounded-lg border-2 border-dashed border-muted opacity-30"
           />
@@ -186,14 +205,14 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
       {/* Picking phase */}
       {phase === 'picking' && (
         <div className="flex gap-4 mt-4">
-          <button 
+          <button
             onClick={addConsonant}
             className="game-button-primary"
             disabled={letters.length >= MAX_LETTERS}
           >
             {t.consonant}
           </button>
-          <button 
+          <button
             onClick={addVowel}
             className="game-button-accent"
             disabled={letters.length >= MAX_LETTERS}
@@ -206,8 +225,8 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
       {/* Playing phase */}
       {phase === 'playing' && (
         <div className="flex flex-col items-center gap-3 md:gap-4 mt-2 md:mt-4">
-          <CountdownTimer 
-            duration={settings.lettersTimeoutDuration} 
+          <CountdownTimer
+            duration={settings.lettersTimeoutDuration}
             isRunning={timerRunning}
             onComplete={handleTimerComplete}
             size={120}
@@ -228,7 +247,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
             usedLetters={usedLetters}
             onInsert={(letter) => setUserWord(prev => prev + letter)}
           />
-          <button 
+          <button
             onClick={() => {
               setTimerRunning(false);
               submitWord();
@@ -262,7 +281,7 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
               <p className="font-display text-2xl font-bold text-accent">{longestWord}</p>
             </div>
           )}
-          <button 
+          <button
             onClick={continueToNext}
             className="game-button-primary"
           >

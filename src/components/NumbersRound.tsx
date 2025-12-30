@@ -28,7 +28,7 @@ const normalizeExpression = (expr: string): string => {
 // Find a solution using the given numbers to reach the target
 const findSolution = (numbers: number[], target: number): string | null => {
   const ops = ['+', '-', '*', '/'];
-  
+
   // Try combinations of 2 numbers
   for (let i = 0; i < numbers.length; i++) {
     for (let j = 0; j < numbers.length; j++) {
@@ -41,7 +41,7 @@ const findSolution = (numbers: number[], target: number): string | null => {
       }
     }
   }
-  
+
   // Try combinations of 3 numbers
   for (let i = 0; i < numbers.length; i++) {
     for (let j = 0; j < numbers.length; j++) {
@@ -49,7 +49,7 @@ const findSolution = (numbers: number[], target: number): string | null => {
       for (const op1 of ops) {
         const r1 = applyOp(numbers[i], numbers[j], op1);
         if (r1 === null || r1 <= 0) continue;
-        
+
         for (let k = 0; k < numbers.length; k++) {
           if (k === i || k === j) continue;
           for (const op2 of ops) {
@@ -62,7 +62,7 @@ const findSolution = (numbers: number[], target: number): string | null => {
       }
     }
   }
-  
+
   // Try combinations of 4 numbers
   for (let i = 0; i < numbers.length; i++) {
     for (let j = 0; j < numbers.length; j++) {
@@ -70,13 +70,13 @@ const findSolution = (numbers: number[], target: number): string | null => {
       for (const op1 of ops) {
         const r1 = applyOp(numbers[i], numbers[j], op1);
         if (r1 === null || r1 <= 0) continue;
-        
+
         for (let k = 0; k < numbers.length; k++) {
           if (k === i || k === j) continue;
           for (const op2 of ops) {
             const r2 = applyOp(r1, numbers[k], op2);
             if (r2 === null || r2 <= 0) continue;
-            
+
             for (let l = 0; l < numbers.length; l++) {
               if (l === i || l === j || l === k) continue;
               for (const op3 of ops) {
@@ -91,7 +91,7 @@ const findSolution = (numbers: number[], target: number): string | null => {
       }
     }
   }
-  
+
   return null;
 };
 
@@ -115,14 +115,14 @@ const generateSolvableTarget = (numbers: number[]): { target: number; solution: 
       return { target, solution };
     }
   }
-  
+
   // Fallback: generate a target from the numbers themselves
   const sorted = [...numbers].sort((a, b) => b - a);
   if (sorted[0] * sorted[1] >= 100 && sorted[0] * sorted[1] <= 999) {
     const target = sorted[0] * sorted[1];
     return { target, solution: `${sorted[0]} x ${sorted[1]} = ${target}` };
   }
-  
+
   // Simple addition fallback
   const sum = sorted[0] + sorted[1] + sorted[2];
   return { target: sum, solution: `${sorted[0]} + ${sorted[1]} + ${sorted[2]} = ${sum}` };
@@ -149,7 +149,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
       toast.error(t.maxLargeNumbers);
       return;
     }
-    const availableLarge = LARGE_NUMBERS.filter(n => 
+    const availableLarge = LARGE_NUMBERS.filter(n =>
       numbers.filter(x => x === n).length < 1
     );
     if (availableLarge.length === 0) return;
@@ -203,10 +203,10 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     // Extract all numbers from the expression
     const numbersInExpr = normalized.match(/\d+/g);
     if (!numbersInExpr) return true; // No numbers is technically valid (empty)
-    
+
     // Create a copy of available numbers to track usage
     const availableNumbers = [...numbers];
-    
+
     for (const numStr of numbersInExpr) {
       const num = parseInt(numStr, 10);
       const index = availableNumbers.indexOf(num);
@@ -215,13 +215,13 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
       }
       availableNumbers.splice(index, 1); // Remove used number
     }
-    
+
     return true;
   };
 
   const submitAnswer = () => {
     const answer = userAnswer.trim();
-    
+
     if (!answer) {
       setRoundScore(0);
       setPhase('result');
@@ -238,7 +238,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     }
 
     const result = evaluateExpression(answer);
-    
+
     if (result === null) {
       toast.error(t.invalidExpression);
       soundEffects.playError();
@@ -276,6 +276,25 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
     submitAnswer();
   };
 
+  // Global Enter key listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        if (phase === 'playing') {
+          e.preventDefault();
+          setTimerRunning(false);
+          submitAnswer();
+        } else if (phase === 'result') {
+          e.preventDefault();
+          onRoundComplete(roundScore);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [phase, submitAnswer, roundScore, onRoundComplete]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && phase === 'playing') {
       e.preventDefault();
@@ -291,7 +310,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
       setUsedNumbers([]);
       return;
     }
-    
+
     const normalized = normalizeExpression(userAnswer);
     const numbersInExpr = normalized.match(/\d+/g) || [];
     const used = numbersInExpr.map(n => parseInt(n, 10));
@@ -343,14 +362,14 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
       {/* Number tiles */}
       <div className="flex flex-wrap justify-center gap-2 md:gap-3">
         {numbers.map((number, index) => (
-          <NumberTile 
-            key={index} 
+          <NumberTile
+            key={index}
             number={number}
             isLarge={LARGE_NUMBERS.includes(number)}
           />
         ))}
         {Array.from({ length: 6 - numbers.length }).map((_, index) => (
-          <div 
+          <div
             key={`empty-${index}`}
             className="w-14 h-14 md:w-16 md:h-16 rounded-lg border-2 border-dashed border-muted opacity-30"
           />
@@ -360,14 +379,14 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
       {/* Picking phase */}
       {phase === 'picking' && (
         <div className="flex gap-4 mt-4">
-          <button 
+          <button
             onClick={pickLarge}
             className="game-button-accent"
             disabled={numbers.length >= 6 || largeCount >= 4}
           >
             {t.large} ({largeCount}/4)
           </button>
-          <button 
+          <button
             onClick={pickSmall}
             className="game-button-primary"
             disabled={numbers.length >= 6}
@@ -380,8 +399,8 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
       {/* Playing phase */}
       {phase === 'playing' && (
         <div className="flex flex-col items-center gap-3 md:gap-4 mt-2 md:mt-4">
-          <CountdownTimer 
-            duration={settings.numbersTimeoutDuration} 
+          <CountdownTimer
+            duration={settings.numbersTimeoutDuration}
             isRunning={timerRunning}
             onComplete={handleTimerComplete}
             size={120}
@@ -405,7 +424,7 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
             usedNumbers={usedNumbers}
             onInsert={(value) => setUserAnswer(prev => prev + value)}
           />
-          <button 
+          <button
             onClick={() => {
               setTimerRunning(false);
               submitAnswer();
@@ -435,14 +454,14 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
             <p className="text-muted-foreground">{t.pointsEarned}</p>
             <p className="score-display">{roundScore}</p>
           </div>
-          
+
           {/* Show solution */}
           <div className="card-game text-center">
             <p className="text-muted-foreground text-sm mb-2">{t.onePossibleSolution}</p>
             <p className="font-mono text-lg text-primary">{solution}</p>
           </div>
-          
-          <button 
+
+          <button
             onClick={continueToNext}
             className="game-button-primary"
           >

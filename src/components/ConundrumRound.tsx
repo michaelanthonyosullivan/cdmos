@@ -1,19 +1,20 @@
 import { useState, useCallback, useEffect } from 'react';
 import { LetterTile } from './LetterTile';
-import { CountdownTimer } from './CountdownTimer';
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/hooks/useLanguage";
 import { getRandomConundrumWord, scrambleWord } from '@/lib/conundrumWords';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
-import { useLanguage } from '@/hooks/useLanguage';
 import { useSettings } from '@/hooks/useSettings';
+import { CountdownTimer } from './CountdownTimer';
 
 interface ConundrumRoundProps {
   onRoundComplete: (score: number) => void;
 }
 
 export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { settings } = useSettings();
   const [answer, setAnswer] = useState('');
   const [scrambled, setScrambled] = useState('');
@@ -23,11 +24,34 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
   const [roundScore, setRoundScore] = useState(0);
   const [solved, setSolved] = useState(false);
 
+  // Global Enter key listener
   useEffect(() => {
-    const word = getRandomConundrumWord();
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        if (phase === 'playing') {
+          // Input usually handles this via onKeyDown, but global backup is good
+          // However, ConundrumRound submitGuess relies on state 'userGuess'
+          // We can just rely on the existing onKeyDown for input, 
+          // but for checking 'result' phase we need this.
+          // Since the input is autoFocused and captures Enter, we might only need this for 'result'.
+          // But let's be safe. Interaction might be tricky if input isn't focused.
+        }
+        if (phase === 'result') {
+          e.preventDefault();
+          onRoundComplete(roundScore);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [phase, roundScore, onRoundComplete]);
+
+  useEffect(() => {
+    const word = getRandomConundrumWord(language);
     setAnswer(word);
     setScrambled(scrambleWord(word));
-  }, []);
+  }, [language]);
 
   const startRound = () => {
     setPhase('playing');
@@ -46,7 +70,7 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
 
   const submitGuess = () => {
     const guess = userGuess.trim().toUpperCase();
-    
+
     if (!guess) {
       return;
     }
@@ -92,9 +116,9 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
       {/* Scrambled letter tiles */}
       <div className="flex flex-wrap justify-center gap-1.5 md:gap-2 lg:gap-3 max-w-xl">
         {scrambled.split('').map((letter, index) => (
-          <LetterTile 
-            key={index} 
-            letter={letter} 
+          <LetterTile
+            key={index}
+            letter={letter}
             delay={index * 100}
             isConundrum
           />
@@ -103,7 +127,7 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
 
       {/* Ready phase */}
       {phase === 'ready' && (
-        <button 
+        <button
           onClick={startRound}
           className="game-button-accent text-lg px-8 py-4 mt-4"
         >
@@ -114,8 +138,8 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
       {/* Playing phase */}
       {phase === 'playing' && (
         <div className="flex flex-col items-center gap-3 md:gap-4 mt-2 md:mt-4">
-          <CountdownTimer 
-            duration={settings.conundrumTimeoutDuration} 
+          <CountdownTimer
+            duration={settings.conundrumTimeoutDuration}
             isRunning={timerRunning}
             onComplete={handleTimerComplete}
             size={120}
@@ -132,7 +156,7 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
               maxLength={9}
             />
           </div>
-          <button 
+          <button
             onClick={submitGuess}
             className="game-button-accent"
           >
@@ -159,7 +183,7 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
             <p className="text-muted-foreground">{t.pointsEarned}</p>
             <p className="score-display">{roundScore}</p>
           </div>
-          <button 
+          <button
             onClick={continueToNext}
             className="game-button-primary"
           >

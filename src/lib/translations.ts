@@ -6,12 +6,12 @@ export const translations = {
     title: 'COUNT',
     titleSuffix: 'DOWN',
     tagline: 'The classic word and numbers game',
-    
+
     // How to play
     howToPlay: 'How to Play',
     lettersRoundDesc: 'Pick 9 letters (vowels and consonants), then make the longest word you can in 30 seconds.',
     numbersRoundDesc: 'Pick 6 numbers, then use arithmetic to reach the target number.',
-    
+
     // Buttons
     startGame: 'Start Game',
     playAgain: 'Play Again',
@@ -21,12 +21,16 @@ export const translations = {
     checking: 'Checking...',
     startConundrum: 'Start Conundrum',
     seeFinalScore: 'See Final Score',
-    
+
     // Letters round
     lettersRound: 'Letters Round',
     consonant: 'Consonant',
     vowel: 'Vowel',
-    pickMoreLetters: (n: number) => n === 9 ? 'Pick 9 letters' : `Pick ${n} more letters`,
+    pickMoreLetters: (n: number) => {
+      if (n === 9) return 'Pick 9 letters';
+      if (n === 1) return 'Pick 1 more letter';
+      return `Pick ${n} more letters`;
+    },
     makeLongestWord: 'Make the longest word you can!',
     roundComplete: 'Round Complete',
     typeYourWord: 'Type your word...',
@@ -39,12 +43,12 @@ export const translations = {
     greatWord: (points: number) => `Great word! +${points} points`,
     needMinVowels: 'You need at least 3 vowels!',
     needMinConsonants: 'You need at least 4 consonants!',
-    
+
     // Numbers round
     numbersRound: 'Numbers Round',
     large: 'Large',
     small: 'Small',
-    pickMoreNumbers: (n: number) => `Pick ${n} more numbers`,
+    pickMoreNumbers: (n: number) => n === 1 ? 'Pick 1 number' : `Pick ${n} numbers`,
     getCloseToTarget: 'Get as close to the target as you can!',
     target: 'Target',
     yourCalculation: 'Your calculation:',
@@ -60,19 +64,20 @@ export const translations = {
     tooFarFromTarget: (result: number) => `Result: ${result} - Too far from target`,
     onePossibleSolution: 'One possible solution:',
     invalid: 'Invalid',
-    
+
     // Conundrum
     conundrum: 'CONUNDRUM',
+    conundrumRound: 'Conundrum Round',
     unscrambleWord: 'Unscramble the 9-letter word!',
     findHiddenWord: 'Find the hidden word!',
     conundrumSolved: 'Conundrum Solved!',
     timesUp: "Time's Up!",
-    typeYourAnswer: 'Type your answer...',
+    typeYourAnswer: 'TYPE YOUR WORD',
     youGotIt: 'You got it!',
     answerWas: 'The answer was:',
     brilliantSolved: 'Brilliant! You solved the Conundrum! +10 points',
     notQuiteTryAgain: 'Not quite! Try again...',
-    
+
     // Game over
     gameOver: 'Game Over',
     finalScore: 'Final Score',
@@ -80,7 +85,7 @@ export const translations = {
     greatPerformance: 'Great performance!',
     goodEffort: 'Good effort!',
     keepPracticing: 'Keep practicing!',
-    
+
     // High scores
     highScores: 'High Scores',
     clearHighScores: 'Clear high scores',
@@ -88,19 +93,19 @@ export const translations = {
     noHighScoresYet: 'No high scores yet. Play a game!',
     highScoresCleared: 'High scores cleared',
     pts: 'pts',
-    
+
     // Header
     round: 'Round',
     score: 'Score',
-    
+
     // Footer
     footer: "Inspired by the classic TV show - reimagined by Michael O'Sullivan",
-    
+
     // Language
     language: 'Language',
     english: 'English',
     french: 'Français',
-    
+
     // Settings
     settings: 'Settings',
     settingsDescription: 'Configure your game preferences',
@@ -112,12 +117,12 @@ export const translations = {
     title: 'DES CHIFFRES',
     titleSuffix: ' ET DES LETTRES',
     tagline: 'Le jeu classique des mots et des chiffres',
-    
+
     // How to play
     howToPlay: 'Comment jouer',
     lettersRoundDesc: 'Choisissez 9 lettres (voyelles et consonnes), puis formez le mot le plus long en 30 secondes.',
     numbersRoundDesc: 'Choisissez 6 nombres, puis utilisez les opérations pour atteindre le nombre cible.',
-    
+
     // Buttons
     startGame: 'Commencer',
     playAgain: 'Rejouer',
@@ -127,12 +132,16 @@ export const translations = {
     checking: 'Vérification...',
     startConundrum: 'Commencer le défi',
     seeFinalScore: 'Voir le score final',
-    
+
     // Letters round
     lettersRound: 'Manche des lettres',
     consonant: 'Consonne',
     vowel: 'Voyelle',
-    pickMoreLetters: (n: number) => n === 9 ? 'Choisissez 9 lettres' : `Choisissez encore ${n} lettres`,
+    pickMoreLetters: (n: number) => {
+      if (n === 9) return 'Choisissez 9 lettres';
+      if (n === 1) return 'Choisissez encore 1 lettre';
+      return `Choisissez encore ${n} lettres`;
+    },
     makeLongestWord: 'Formez le mot le plus long possible !',
     roundComplete: 'Manche terminée',
     typeYourWord: 'Tapez votre mot...',
@@ -145,12 +154,12 @@ export const translations = {
     greatWord: (points: number) => `Excellent mot ! +${points} points`,
     needMinVowels: "Vous avez besoin d'au moins 3 voyelles !",
     needMinConsonants: "Vous avez besoin d'au moins 4 consonnes !",
-    
+
     // Numbers round
     numbersRound: 'Manche des chiffres',
     large: 'Grand',
     small: 'Petit',
-    pickMoreNumbers: (n: number) => `Choisissez ${n} nombres de plus`,
+    pickMoreNumbers: (n: number) => n === 1 ? 'Choisissez 1 nombre' : `Choisissez ${n} nombres`,
     getCloseToTarget: 'Approchez-vous le plus possible de la cible !',
     target: 'Cible',
     yourCalculation: 'Votre calcul :',
@@ -166,19 +175,20 @@ export const translations = {
     tooFarFromTarget: (result: number) => `Résultat : ${result} - Trop loin de la cible`,
     onePossibleSolution: 'Une solution possible :',
     invalid: 'Invalide',
-    
+
     // Conundrum
     conundrum: 'ÉNIGME',
+    conundrumRound: "Manche de l'Enigme",
     unscrambleWord: 'Trouvez le mot de 9 lettres !',
     findHiddenWord: 'Trouvez le mot caché !',
     conundrumSolved: 'Énigme résolue !',
     timesUp: 'Temps écoulé !',
-    typeYourAnswer: 'Tapez votre réponse...',
+    typeYourAnswer: 'TAPEZ VOTRE MOT',
     youGotIt: "Vous l'avez trouvé !",
     answerWas: 'La réponse était :',
     brilliantSolved: "Brillant ! Vous avez résolu l'énigme ! +10 points",
     notQuiteTryAgain: 'Pas tout à fait ! Réessayez...',
-    
+
     // Game over
     gameOver: 'Fin de partie',
     finalScore: 'Score final',
@@ -186,7 +196,7 @@ export const translations = {
     greatPerformance: 'Excellente performance !',
     goodEffort: 'Bon effort !',
     keepPracticing: 'Continuez à vous entraîner !',
-    
+
     // High scores
     highScores: 'Meilleurs scores',
     clearHighScores: 'Effacer les scores',
@@ -194,19 +204,19 @@ export const translations = {
     noHighScoresYet: 'Pas encore de scores. Jouez une partie !',
     highScoresCleared: 'Scores effacés',
     pts: 'pts',
-    
+
     // Header
     round: 'Manche',
     score: 'Score',
-    
+
     // Footer
     footer: "Inspiré de l'émission télévisée classique - réimaginé par Michael O'Sullivan",
-    
+
     // Language
     language: 'Langue',
     english: 'English',
     french: 'Français',
-    
+
     // Settings
     settings: 'Paramètres',
     settingsDescription: 'Configurez vos préférences de jeu',

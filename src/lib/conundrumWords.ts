@@ -1,6 +1,6 @@
 // 9-letter words for the Conundrum round
-export const CONUNDRUM_WORDS = [
-  'ABOLISHES', 'ABSOLUTES', 'ABSTRACTS', 'ACADEMICS', 'ACCIDENTS', 'ACCORDING', 
+export const ENGLISH_CONUNDRUMS = [
+  'ABOLISHES', 'ABSOLUTES', 'ABSTRACTS', 'ACADEMICS', 'ACCIDENTS', 'ACCORDING',
   'ACCOUNTS', 'ACHIEVING', 'ADDRESSES', 'ADJUSTING', 'ADMIRABLE', 'ADMISSION',
   'ADVENTURE', 'ADVERTISE', 'AFFECTING', 'AFFORDING', 'AFTERWARD', 'AGREEMENT',
   'ALGORITHM', 'ALIGNMENT', 'ALLOCATED', 'ALONGSIDE', 'ALPHABETS', 'ALTERNATE',
@@ -445,24 +445,40 @@ export const CONUNDRUM_WORDS = [
   'ZEALOUSLY', 'ZIGZAGGED', 'ZOMBIFIED',
 ];
 
-export const getRandomConundrumWord = (): string => {
-  return CONUNDRUM_WORDS[Math.floor(Math.random() * CONUNDRUM_WORDS.length)];
+export const FRENCH_CONUNDRUMS = [
+  'PRESIDENT', 'POLITIQUE', 'SEULEMENT', 'ATTENTION', 'SITUATION', 'DIRECTEUR',
+  'DIFFICILE', 'DIFFERENT', 'TELEPHONE', 'APPRENDRE', 'SENTIMENT', 'TROISIEME',
+  'PROCHAINE', 'ACTUALITE', 'AFFICHAGE', 'ALLEMAGNE', 'ALUMINIUM', 'AMBULANCE',
+  'AMELIORER', 'ANIMATION', 'ASCENSEUR', 'ASIATIQUE', 'ASSEMBLER', 'ASSISTANT',
+  'ASSURANCE', 'ASTEROIDE', 'ATTAQUANT', 'ATTENTION', 'AUBERGINE', 'AUGMENTER',
+  'AUTOROUTE', 'AVALANCHE', 'IMPORTANT', 'COMMENCER', 'CONSEILLER', 'DECEMBRE',
+  'SECRETAIRE', 'DANGEREUX', 'PERSONNEL', 'PRINCIPAL', 'EDUCATION', 'COMPRENDRE',
+  'CONDITION', 'MOUVEMENT', 'TRAITEMENT', 'CAPITAINE', 'ANTERIEUR', 'TRAVERSER',
+  'PRINTEMPS', 'VETEMENTS', 'RECHERCHE', 'VOYAGEURS', 'CLASSIQUE', 'BILLETTER',
+  'TRANSFERT', 'TRANSPORT', 'SOLUTIONS', 'FONCTION', 'VIOLENCE', 'QUARTIER',
+  'TRADITION', 'IMMIGRANT', 'EXCELLENT', 'INTENTION', 'JUGEMENT', 'MONTAGNE',
+  'PROJETER', 'QUESTION', 'RESULTAT', 'SURPRISE', 'SYMPTHOME', 'TERRITOIRE'
+];
+
+export const getRandomConundrumWord = (language: 'en' | 'fr' = 'en'): string => {
+  const words = language === 'fr' ? FRENCH_CONUNDRUMS : ENGLISH_CONUNDRUMS;
+  return words[Math.floor(Math.random() * words.length)];
 };
 
 export const scrambleWord = (word: string): string => {
   const letters = word.split('');
   let scrambled = [...letters];
-  
+
   // Fisher-Yates shuffle
   for (let i = scrambled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [scrambled[i], scrambled[j]] = [scrambled[j], scrambled[i]];
   }
-  
+
   // Make sure it's actually scrambled
   if (scrambled.join('') === word) {
     return scrambleWord(word);
   }
-  
+
   return scrambled.join('');
 };
