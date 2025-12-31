@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { LetterTile } from './LetterTile';
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { soundEffects } from '@/hooks/useSoundEffects';
 import { useSettings } from '@/hooks/useSettings';
 import { CountdownTimer } from './CountdownTimer';
+import { VirtualLetterKeyboard } from './VirtualLetterKeyboard';
+import { insertAtCursor, deleteAtCursor } from '@/lib/textUtils';
 
 interface ConundrumRoundProps {
   onRoundComplete: (score: number) => void;
@@ -23,6 +25,32 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
   const [userGuess, setUserGuess] = useState('');
   const [roundScore, setRoundScore] = useState(0);
   const [solved, setSolved] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [cursorPos, setCursorPos] = useState<number | null>(null);
+
+  const updateInput = (newText: string, newCursor: number) => {
+    setUserGuess(newText);
+    setCursorPos(newCursor);
+
+    // Defer selection update to ensure render happening first
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.setSelectionRange(newCursor, newCursor);
+      }
+    }, 0);
+  };
+
+  const handleInsert = (letter: string) => {
+    const { newText, newCursor } = insertAtCursor(userGuess, letter, cursorPos);
+    updateInput(newText, newCursor);
+  };
+
+  const handleDelete = () => {
+    const { newText, newCursor } = deleteAtCursor(userGuess, cursorPos);
+    updateInput(newText, newCursor);
+  };
 
   // Global Enter key listener
   useEffect(() => {
@@ -146,16 +174,29 @@ export const ConundrumRound = ({ onRoundComplete }: ConundrumRoundProps) => {
           />
           <div className="w-full max-w-md">
             <Input
+              ref={inputRef}
               type="text"
               placeholder={t.typeYourAnswer}
               value={userGuess}
-              onChange={(e) => setUserGuess(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                setUserGuess(e.target.value.toUpperCase());
+                setCursorPos(e.target.selectionStart);
+              }}
+              onSelect={(e) => setCursorPos(e.currentTarget.selectionStart)}
               onKeyDown={handleKeyDown}
               className="text-center font-display text-xl md:text-2xl h-12 md:h-14 uppercase tracking-wider bg-secondary border-border focus:border-accent"
               autoFocus
               maxLength={9}
             />
           </div>
+
+          <VirtualLetterKeyboard
+            letters={scrambled.split('')}
+            usedLetters={userGuess.toUpperCase().split('')}
+            onInsert={handleInsert}
+            onDelete={handleDelete}
+          />
+
           <button
             onClick={submitGuess}
             className="game-button-accent"

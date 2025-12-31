@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { NumberTile } from './NumberTile';
 import { CountdownTimer } from './CountdownTimer';
 import { Input } from '@/components/ui/input';
@@ -7,12 +7,12 @@ import { soundEffects } from '@/hooks/useSoundEffects';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useSettings } from '@/hooks/useSettings';
 import { VirtualNumberKeyboard } from './VirtualNumberKeyboard';
+import { insertAtCursor, deleteAtCursor } from '@/lib/textUtils';
 
 interface NumbersRoundProps {
   onRoundComplete: (score: number) => void;
   roundNumber: number;
 }
-
 // Normalize expression: convert [] to (), x to *, = to +
 const normalizeExpression = (expr: string): string => {
   return expr
@@ -140,6 +140,32 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
   const [roundScore, setRoundScore] = useState(0);
   const [largeCount, setLargeCount] = useState(0);
   const [usedNumbers, setUsedNumbers] = useState<number[]>([]);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [cursorPos, setCursorPos] = useState<number | null>(null);
+
+  const updateInput = (newText: string, newCursor: number) => {
+    setUserAnswer(newText);
+    setCursorPos(newCursor);
+
+    // Defer selection update to ensure render happening first
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.setSelectionRange(newCursor, newCursor);
+      }
+    }, 0);
+  };
+
+  const handleInsert = (value: string) => {
+    const { newText, newCursor } = insertAtCursor(userAnswer, value, cursorPos);
+    updateInput(newText, newCursor);
+  };
+
+  const handleDelete = () => {
+    const { newText, newCursor } = deleteAtCursor(userAnswer, cursorPos);
+    updateInput(newText, newCursor);
+  };
 
   const LARGE_NUMBERS = [25, 50, 75, 100];
 
@@ -407,10 +433,15 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
           />
           <div className="w-full max-w-md">
             <Input
+              ref={inputRef}
               type="text"
               placeholder={t.inputPlaceholder}
               value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value.replace(/=/g, '+'))}
+              onChange={(e) => {
+                setUserAnswer(e.target.value.replace(/=/g, '+'));
+                setCursorPos(e.target.selectionStart);
+              }}
+              onSelect={(e) => setCursorPos(e.currentTarget.selectionStart)}
               onKeyDown={handleKeyDown}
               className="text-center font-mono text-lg md:text-xl h-12 md:h-14 bg-secondary border-border focus:border-primary"
               autoFocus
@@ -422,7 +453,8 @@ export const NumbersRound = ({ onRoundComplete, roundNumber }: NumbersRoundProps
           <VirtualNumberKeyboard
             numbers={numbers}
             usedNumbers={usedNumbers}
-            onInsert={(value) => setUserAnswer(prev => prev + value)}
+            onInsert={handleInsert}
+            onDelete={handleDelete}
           />
           <button
             onClick={() => {

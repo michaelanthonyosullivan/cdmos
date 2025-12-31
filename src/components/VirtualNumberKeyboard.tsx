@@ -1,10 +1,13 @@
+import { Delete } from "lucide-react";
+
 interface VirtualNumberKeyboardProps {
   numbers: number[];
   usedNumbers?: number[];
   onInsert: (value: string) => void;
+  onDelete: () => void;
 }
 
-export const VirtualNumberKeyboard = ({ numbers, usedNumbers = [], onInsert }: VirtualNumberKeyboardProps) => {
+export const VirtualNumberKeyboard = ({ numbers, usedNumbers = [], onInsert, onDelete }: VirtualNumberKeyboardProps) => {
   const operators = ['+', '-', '×', '÷', '(', ')'];
 
   const getNumberUsageCount = (num: number): number => {
@@ -33,18 +36,17 @@ export const VirtualNumberKeyboard = ({ numbers, usedNumbers = [], onInsert }: V
               key={index}
               onClick={() => !isUsed && onInsert(num.toString())}
               disabled={isUsed}
-              className={`w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg border font-bold text-sm md:text-base lg:text-lg transition-colors ${
-                isUsed
+              className={`w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg border font-bold text-sm md:text-base lg:text-lg transition-colors ${isUsed
                   ? 'bg-muted border-muted text-muted-foreground opacity-50 cursor-not-allowed'
                   : 'bg-secondary border-border text-foreground hover:bg-primary hover:text-primary-foreground'
-              }`}
+                }`}
             >
               {num}
             </button>
           );
         })}
       </div>
-      
+
       {/* Operators */}
       <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
         {operators.map((op) => (
@@ -56,6 +58,13 @@ export const VirtualNumberKeyboard = ({ numbers, usedNumbers = [], onInsert }: V
             {op}
           </button>
         ))}
+        <button
+          onClick={onDelete}
+          className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg border bg-secondary border-border text-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors flex items-center justify-center"
+          aria-label="Delete"
+        >
+          <Delete className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
+        </button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { LetterTile } from './LetterTile';
 import { CountdownTimer } from './CountdownTimer';
 import { getRandomConsonant, getRandomVowel, isValidWord, canFormWord, calculateWordScore, findLongestWord } from '@/lib/gameUtils';
@@ -8,6 +8,7 @@ import { soundEffects } from '@/hooks/useSoundEffects';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useSettings } from '@/hooks/useSettings';
 import { VirtualLetterKeyboard } from './VirtualLetterKeyboard';
+import { insertAtCursor, deleteAtCursor } from '@/lib/textUtils';
 interface LettersRoundProps {
   onRoundComplete: (score: number) => void;
   roundNumber: number;
@@ -26,6 +27,32 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
   const [isValidating, setIsValidating] = useState(false);
   const [usedLetters, setUsedLetters] = useState<string[]>([]);
   const [longestWord, setLongestWord] = useState<string | null>(null);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [cursorPos, setCursorPos] = useState<number | null>(null);
+
+  const updateInput = (newText: string, newCursor: number) => {
+    setUserWord(newText);
+    setCursorPos(newCursor);
+
+    // Defer selection update to ensure render happening first
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.setSelectionRange(newCursor, newCursor);
+      }
+    }, 0);
+  };
+
+  const handleInsert = (letter: string) => {
+    const { newText, newCursor } = insertAtCursor(userWord, letter, cursorPos);
+    updateInput(newText, newCursor);
+  };
+
+  const handleDelete = () => {
+    const { newText, newCursor } = deleteAtCursor(userWord, cursorPos);
+    updateInput(newText, newCursor);
+  };
 
   const MAX_LETTERS = 9;
   const MIN_VOWELS = 3;
@@ -233,10 +260,15 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
           />
           <div className="w-full max-w-md">
             <Input
+              ref={inputRef}
               type="text"
               placeholder={t.typeYourWord}
               value={userWord}
-              onChange={(e) => setUserWord(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                setUserWord(e.target.value.toUpperCase());
+                setCursorPos(e.target.selectionStart);
+              }}
+              onSelect={(e) => setCursorPos(e.currentTarget.selectionStart)}
               onKeyDown={handleKeyDown}
               className="text-center font-display text-xl md:text-2xl h-12 md:h-14 uppercase tracking-wider bg-secondary border-border focus:border-primary"
               autoFocus
@@ -245,7 +277,8 @@ export const LettersRound = ({ onRoundComplete, roundNumber }: LettersRoundProps
           <VirtualLetterKeyboard
             letters={letters}
             usedLetters={usedLetters}
-            onInsert={(letter) => setUserWord(prev => prev + letter)}
+            onInsert={handleInsert}
+            onDelete={handleDelete}
           />
           <button
             onClick={() => {

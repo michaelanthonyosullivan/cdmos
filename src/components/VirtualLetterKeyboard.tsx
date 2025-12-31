@@ -1,10 +1,13 @@
+import { Delete } from "lucide-react";
+
 interface VirtualLetterKeyboardProps {
   letters: string[];
   usedLetters?: string[];
   onInsert: (letter: string) => void;
+  onDelete: () => void;
 }
 
-export const VirtualLetterKeyboard = ({ letters, usedLetters = [], onInsert }: VirtualLetterKeyboardProps) => {
+export const VirtualLetterKeyboard = ({ letters, usedLetters = [], onInsert, onDelete }: VirtualLetterKeyboardProps) => {
   const isLetterUsed = (letter: string, index: number): boolean => {
     // Count how many times this letter appears before this index
     const occurrencesBefore = letters.slice(0, index).filter(l => l === letter).length;
@@ -23,17 +26,24 @@ export const VirtualLetterKeyboard = ({ letters, usedLetters = [], onInsert }: V
               key={index}
               onClick={() => !isUsed && onInsert(letter)}
               disabled={isUsed}
-              className={`w-10 h-11 md:w-11 md:h-12 lg:w-12 lg:h-14 rounded-lg border font-bold text-sm md:text-base lg:text-lg uppercase transition-colors ${
-                isUsed
+              className={`w-10 h-11 md:w-11 md:h-12 lg:w-12 lg:h-14 rounded-lg border font-bold text-sm md:text-base lg:text-lg uppercase transition-colors ${isUsed
                   ? 'bg-muted border-muted text-muted-foreground opacity-50 cursor-not-allowed'
                   : 'bg-secondary border-border text-foreground hover:bg-primary hover:text-primary-foreground'
-              }`}
+                }`}
             >
               {letter}
             </button>
           );
         })}
+        <button
+          onClick={onDelete}
+          className="w-10 h-11 md:w-11 md:h-12 lg:w-12 lg:h-14 rounded-lg border bg-secondary border-border text-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors flex items-center justify-center"
+          aria-label="Delete"
+        >
+          <Delete className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
+        </button>
       </div>
     </div>
   );
 };
+
