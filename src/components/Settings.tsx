@@ -51,7 +51,7 @@ export const Settings = ({ onClose }: SettingsProps) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="letters-timeout" className="text-base">
-              {t.lettersRound || 'Letters Round'} {t.timeoutDuration || 'Timeout'}
+              {t.lettersRound || 'Letters Round'}: {t.timeoutDuration || 'Timeout'}
             </Label>
             <span className="font-display text-lg font-semibold text-accent">
               {formatDuration(settings.lettersTimeoutDuration)}
@@ -91,7 +91,7 @@ export const Settings = ({ onClose }: SettingsProps) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="numbers-timeout" className="text-base">
-              {t.numbersRound || 'Numbers Round'} {t.timeoutDuration || 'Timeout'}
+              {t.numbersRound || 'Numbers Round'}: {t.timeoutDuration || 'Timeout'}
             </Label>
             <span className="font-display text-lg font-semibold text-accent">
               {formatDuration(settings.numbersTimeoutDuration)}
@@ -131,7 +131,7 @@ export const Settings = ({ onClose }: SettingsProps) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="conundrum-timeout" className="text-base">
-              {t.conundrumRound || 'Conundrum Round'} {t.timeoutDuration || 'Timeout'}
+              {t.conundrumRound || 'Conundrum Round'}: {t.timeoutDuration || 'Timeout'}
             </Label>
             <span className="font-display text-lg font-semibold text-accent">
               {formatDuration(settings.conundrumTimeoutDuration)}
