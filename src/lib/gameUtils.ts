@@ -113,11 +113,12 @@ export const calculateWordScore = (word: string): number => {
 };
 
 // Find the longest valid word that can be formed from available letters
+// Uses common words dictionaries to provide sensible example answers
 export const findLongestWord = async (availableLetters: string[], language: 'en' | 'fr' = 'en'): Promise<string | null> => {
   if (language === 'en') {
-    // English: use local dictionary
-    const { ENGLISH_WORDS } = await import('./englishWords');
-    const sortedWords = Array.from(ENGLISH_WORDS).sort((a, b) => b.length - a.length);
+    // English: use common words dictionary for better example answers
+    const { ENGLISH_COMMON_WORDS } = await import('./englishCommonWords');
+    const sortedWords = Array.from(ENGLISH_COMMON_WORDS).sort((a, b) => b.length - a.length);
 
     for (const word of sortedWords) {
       if (canFormWord(word, availableLetters)) {
@@ -127,9 +128,9 @@ export const findLongestWord = async (availableLetters: string[], language: 'en'
 
     return null;
   } else {
-    // French: use local dictionary
-    const { FRENCH_WORDS } = await import('./frenchWords');
-    const sortedWords = Array.from(FRENCH_WORDS).sort((a, b) => b.length - a.length);
+    // French: use common words dictionary for better example answers
+    const { FRENCH_COMMON_WORDS } = await import('./frenchCommonWords');
+    const sortedWords = Array.from(FRENCH_COMMON_WORDS).sort((a, b) => b.length - a.length);
 
     for (const word of sortedWords) {
       if (canFormWord(word, availableLetters)) {
