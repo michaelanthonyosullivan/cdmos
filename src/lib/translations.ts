@@ -9,7 +9,7 @@ export const translations = {
 
     // How to play
     howToPlay: 'How to Play',
-    lettersRoundDesc: 'Pick 9 letters (vowels and consonants), then make the longest word you can in 30 seconds.',
+    lettersRoundDesc: 'Pick 9 letters (vowels and consonants), then make the longest word you can in 30 seconds (or longer if you prefer).',
     numbersRoundDesc: 'Pick 6 numbers, then use arithmetic to reach the target number.',
 
     // Buttons
@@ -120,7 +120,7 @@ export const translations = {
 
     // How to play
     howToPlay: 'Comment jouer',
-    lettersRoundDesc: 'Choisissez 9 lettres (voyelles et consonnes), puis formez le mot le plus long en 30 secondes.',
+    lettersRoundDesc: 'Choisissez 9 lettres (voyelles et consonnes), puis formez le mot le plus long en 30 secondes (ou plus si vous préférez).',
     numbersRoundDesc: 'Choisissez 6 nombres, puis utilisez les opérations pour atteindre le nombre cible.',
 
     // Buttons
