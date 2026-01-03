@@ -78,16 +78,46 @@ async function main() {
     });
 
     // Manual blacklist
-    ['manitoba', 'ontario', 'quebec', 'alberta', 'saskatchewan', 'yukon', 'nunavut', 'amanda', 'paris', 'london', 'france', 'germany', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december', 'aaa', 'aa'].forEach(w => blacklist.add(w));
+    ['manitoba', 'ontario', 'quebec', 'alberta', 'saskatchewan', 'yukon', 'nunavut', 'amanda', 'paris', 'london', 'france', 'germany', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december', 'aaa', 'aa', 'ambien'].forEach(w => blacklist.add(w));
 
     console.log(`Blacklist size: ${blacklist.size}`);
-    console.log(`Blacklist contains 'aaron'? ${blacklist.has('aaron')}`);
+
+    // LOAD REFERENCE DICTIONARIES FIRST
+    console.log('Reading existing dictionary files to use as validators...');
+    let enAllSet = new Set();
+    let frAllSet = new Set();
+
+    if (fs.existsSync(PATHS.englishAll)) {
+        const enAllContent = fs.readFileSync(PATHS.englishAll, 'utf8');
+        const parsed = parseTsSet(enAllContent);
+        // Filter the reference set itself against the blacklist
+        enAllSet = new Set([...parsed].filter(w => !blacklist.has(w.toLowerCase())));
+        console.log(`English Reference Dictionary: ${enAllSet.size} words`);
+        // We will rewrite this later to ensure it is clean, but we use the CLEAN version for validation
+    } else {
+        console.warn("WARNING: English All dictionary not found! Cannot validate common words.");
+    }
+
+    if (fs.existsSync(PATHS.frenchAll)) {
+        const frAllContent = fs.readFileSync(PATHS.frenchAll, 'utf8');
+        const parsed = parseTsSet(frAllContent);
+        // Filter the reference set itself against the blacklist
+        frAllSet = new Set([...parsed].filter(w => !blacklist.has(w.toLowerCase())));
+        console.log(`French Reference Dictionary: ${frAllSet.size} words`);
+    } else {
+        console.warn("WARNING: French All dictionary not found! Cannot validate common words.");
+    }
 
     // Process English Common (Top 10k)
     const enCommon = new Set();
     enCommonRaw.split('\n').forEach(w => {
         const clean = w.trim().toLowerCase();
+        // RULE: Must be >= 3 chars, not in blacklist, AND present in the main dictionary
         if (clean.length >= 3 && !blacklist.has(clean)) {
+            if (enAllSet.size > 0 && !enAllSet.has(clean)) {
+                // Skip words not in the main dictionary
+                return;
+            }
             enCommon.add(clean);
         }
     });
@@ -111,12 +141,19 @@ async function main() {
 
     // Sort by count descending
     frWords.sort((a, b) => b.count - a.count);
-    console.log(`Top French word: ${frWords[0]?.word} (${frWords[0]?.count})`);
+
+    // Create a Set of the top 20,000 most common words for Conundrum generation
+    // This ensures we only picks "everyday" words for the game puzzles
+    const top20kFrench = new Set(frWords.slice(0, 20000).map(x => x.word));
 
     const frCommon = new Set();
     let frCount = 0;
     for (const { word } of frWords) {
         if (word && word.length >= 3 && !blacklist.has(word) && !/[0-9]/.test(word)) {
+            if (frAllSet.size > 0 && !frAllSet.has(word)) {
+                // Skip words not in the main dictionary
+                continue;
+            }
             frCommon.add(word);
             frCount++;
             if (frCount >= 10000) break;
@@ -128,24 +165,9 @@ async function main() {
     writeTsFile(PATHS.englishCommon, 'ENGLISH_COMMON_WORDS', enCommon);
     writeTsFile(PATHS.frenchCommon, 'FRENCH_COMMON_WORDS', frCommon);
 
-    // Filter All Words
-    console.log('Reading existing dictionary files...');
-
-    if (fs.existsSync(PATHS.englishAll)) {
-        const enAllContent = fs.readFileSync(PATHS.englishAll, 'utf8');
-        const enAll = parseTsSet(enAllContent);
-        const enAllFiltered = new Set([...enAll].filter(w => !blacklist.has(w.toLowerCase())));
-        console.log(`English All: ${enAll.size} -> ${enAllFiltered.size}`);
-        writeTsFile(PATHS.englishAll, 'ENGLISH_WORDS', enAllFiltered);
-    }
-
-    if (fs.existsSync(PATHS.frenchAll)) {
-        const frAllContent = fs.readFileSync(PATHS.frenchAll, 'utf8');
-        const frAll = parseTsSet(frAllContent);
-        const frAllFiltered = new Set([...frAll].filter(w => !blacklist.has(w.toLowerCase())));
-        console.log(`French All: ${frAll.size} -> ${frAllFiltered.size}`);
-        writeTsFile(PATHS.frenchAll, 'FRENCH_WORDS', frAllFiltered);
-    }
+    // Refresh All Words Files (to apply blacklist if it changed)
+    writeTsFile(PATHS.englishAll, 'ENGLISH_WORDS', enAllSet);
+    writeTsFile(PATHS.frenchAll, 'FRENCH_WORDS', frAllSet);
 
     // Filter Conundrum Words
     console.log('Filtering Conundrum words...');
@@ -159,18 +181,19 @@ async function main() {
             const enFiltered = enList.filter(w => !blacklist.has(w.toLowerCase()));
             console.log(`English Conundrums: ${enList.length} -> ${enFiltered.length}`);
 
-            // Extract French Conundrums
-            const frMatch = conundrumContent.match(/export const FRENCH_CONUNDRUMS = \[\s*([\s\S]*?)\];/);
-            let frList = [];
-            if (frMatch) {
-                frList = frMatch[1].split(',').map(s => s.trim().replace(/^['"`]|['"`]$/g, '')).filter(Boolean);
-            }
-            const frFiltered = frList.filter(w => !blacklist.has(w.toLowerCase()));
-            console.log(`French Conundrums: ${frList.length} -> ${frFiltered.length}`);
+            // Generate French Conundrums from the TOP 20k Common Words
+            // We want "everyday" words, so we filter the top 20,000 most frequent words.
+            const frConundrums = Array.from(top20kFrench).filter(w =>
+                w.length === 9 &&
+                !blacklist.has(w) &&
+                !/[^a-zà-ÿ]/.test(w) // Allow french accents if they exist
+            ).sort();
+
+            console.log(`French Conundrums (Generated from Top 20k): ${frConundrums.length}`);
 
             let newContent = conundrumContent
                 .replace(/export const ENGLISH_CONUNDRUMS = \[\s*([\s\S]*?)\];/, `export const ENGLISH_CONUNDRUMS = [\n  '${enFiltered.join("', '")}'\n];`)
-                .replace(/export const FRENCH_CONUNDRUMS = \[\s*([\s\S]*?)\];/, `export const FRENCH_CONUNDRUMS = [\n  '${frFiltered.join("', '")}'\n];`);
+                .replace(/export const FRENCH_CONUNDRUMS = \[\s*([\s\S]*?)\];/, `export const FRENCH_CONUNDRUMS = [\n  '${frConundrums.join("', '")}'\n];`);
 
             fs.writeFileSync(PATHS.conundrum, newContent, 'utf8');
         }
